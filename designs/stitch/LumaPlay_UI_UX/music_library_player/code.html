@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "inverse-on-surface": "#2a3040", "on-surface-variant": "#c2c6d5", "surface-tint": "#adc6ff", "on-secondary-container": "#00374d", "on-primary-fixed": "#001a41", "on-tertiary-fixed": "#23005c", "on-secondary": "#00354a", "background": "#0d1322", "on-background": "#dde2f8", "on-secondary-fixed": "#001e2c", "on-primary-fixed-variant": "#004494", "surface-container-highest": "#2f3445", "error": "#ffb4ab", "primary": "#adc6ff", "on-tertiary": "#3c0091", "surface-variant": "#2f3445", "surface-container-high": "#242a3a", "on-tertiary-container": "#340080", "on-surface": "#dde2f8", "secondary-fixed-dim": "#7bd0ff", "surface-container-low": "#151b2b", "secondary-fixed": "#c4e7ff", "on-error": "#690005", "outline": "#8c909f", "on-error-container": "#ffdad6", "primary-container": "#4d8efe", "tertiary-container": "#a078ff", "surface-dim": "#0d1322", "primary-fixed-dim": "#adc6ff", "secondary": "#7bd0ff", "secondary-container": "#00a6e0", "tertiary-fixed-dim": "#d0bcff", "tertiary": "#d0bcff", "inverse-surface": "#dde2f8", "tertiary-fixed": "#e9ddff", "on-primary": "#002e69", "surface-bright": "#33394a", "error-container": "#93000a", "surface-container": "#191f2f", "primary-fixed": "#d8e2ff", "on-primary-container": "#00285c", "inverse-primary": "#005ac1", "outline-variant": "#424753", "surface-container-lowest": "#080e1d", "on-tertiary-fixed-variant": "#5516be", "surface": "#0d1322", "on-secondary-fixed-variant": "#004c69" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin": "3.5rem", "space-lg": "2rem", "space-xl": "3rem", "space-md": "1.25rem", "space-sm": "0.75rem", "space-xs": "0.5rem", "gutter": "1.5rem" }, "fontFamily": { "label-md": ["Inter"], "label-lg": ["Inter"], "headline-sm": ["Inter"], "headline-md": ["Inter"], "display-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "headline-lg": ["Inter"], "display-lg": ["Inter"], "body-sm": ["Inter"] }, "fontSize": { "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.04em", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "22px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "600" }], "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-md": ["38px", { "lineHeight": "46px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0.01em", "fontWeight": "400" }], "body-lg": ["18px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "400" }] } } } };</script></head><body class="bg-background font-body-md text-body-md text-on-surface min-h-screen selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between p-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-md"><div class="flex items-center gap-space-xs px-space-xs py-space-xs"><img alt="LumaPlay TV Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WU5Ye_-a20htm_RRsgdrzJVpX1IPFGM9A_1t2gxGktfdRWH6iBrH4_zCL3PkvGgloCC80pgsFy305vCtt-4chHkRjHO91uDWs6ai30z-HpVWMamsjHzb-aVXJj8dJ6uI1_2KEtijGEIJsJ8hzNG8Kc4BEllUFg6tfvq9tUrdK0nZFM739QkJTgrPOGqHT_tIqAEEEGFhdfCIimRU-S7JbCScC8aazIS-fUV15ZEGfMLRpmchsGl13qvg"/><span class="font-headline-md text-headline-md text-on-surface tracking-tight">LumaPlay</span></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-label-lg shadow-[0_0_20px_rgba(56,189,248,0.35)]"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="home" href="#"><span class="material-symbols-outlined text-secondary">home</span><span class="font-label-lg text-label-lg">Home</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="videos" href="#"><span class="material-symbols-outlined text-secondary">movie</span><span class="font-label-lg text-label-lg">Videos</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="music" href="#"><span class="material-symbols-outlined text-secondary">music_note</span><span class="font-label-lg text-label-lg">Music</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="folders" href="#"><span class="material-symbols-outlined text-secondary">folder</span><span class="font-label-lg text-label-lg">Folders</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="search" href="#"><span class="material-symbols-outlined text-secondary">search</span><span class="font-label-lg text-label-lg">Search</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined text-secondary">settings</span><span class="font-label-lg text-label-lg">Settings</span></a></nav></div><div class="flex flex-col gap-space-sm"><div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="h-2 w-2 rounded-full bg-secondary-container animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface-variant truncate max-w-[140px]">SanDisk 1TB USB</span></div><span class="font-label-sm text-label-sm text-secondary">Connected</span></div><div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden"><div class="bg-secondary h-full w-[56%]"></div></div><div class="flex justify-between items-center"><span class="font-label-sm text-label-sm text-outline">438 GB Free</span><span class="font-label-sm text-label-sm text-outline">1 TB</span></div></div><div class="flex items-center justify-between px-space-xs py-space-xs bg-surface-container-lowest rounded-lg"><span class="font-label-md text-label-md text-outline">TV System</span><span class="font-headline-sm text-headline-sm text-on-surface">08:45 PM</span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 flex items-center justify-between px-margin shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-xs"><span class="font-label-sm text-label-sm bg-surface-container-high px-space-xs py-1 rounded text-secondary">1080p Cinema Mode</span></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs text-on-surface-variant"><span class="material-symbols-outlined text-label-lg">wifi</span><span class="font-label-sm text-label-sm">LAN Connected</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="w-full pt-16 bg-background min-h-screen px-margin pb-margin"><div class="flex flex-col w-full">
+<div class="flex flex-col gap-space-lg w-full">
+<!-- Top Filter Navigation: Remote Focusable Category Chips -->
+<section aria-label="Library Navigation" class="flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm overflow-x-auto no-scrollbar py-space-xs">
+<button class="h-10 px-space-md rounded-lg bg-surface-container-high text-secondary font-label-md text-label-md flex items-center gap-space-xs shadow-[0_0_16px_rgba(56,189,248,0.35)] transition-all">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span>All Songs (864)</span>
+</button>
+<button class="h-10 px-space-md rounded-lg bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center gap-space-xs">
+<span>Albums (52)</span>
+</button>
+<button class="h-10 px-space-md rounded-lg bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center gap-space-xs">
+<span>Artists (34)</span>
+</button>
+<button class="h-10 px-space-md rounded-lg bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center gap-space-xs">
+<span>Playlists</span>
+</button>
+<button class="h-10 px-space-md rounded-lg bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center gap-space-xs">
+<span>Recently Played</span>
+</button>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-secondary text-label-lg" style="font-variation-settings: 'FILL' 1;">graphic_eq</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Audio DSP: Direct Bitstream</span>
+</div>
+</section>
+<!-- Main Dual-Panel 10-Foot Experience: Now Playing & Queue -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-stretch">
+<!-- Left Panel: Now Playing Hero with Audio Spectrum & Remote Focus Controls -->
+<section aria-label="Now Playing Focus Card" class="lg:col-span-5 flex flex-col justify-between bg-surface-container-low rounded-xl p-space-md relative overflow-hidden shadow-xl">
+<!-- Subtle Ambient Glow Backdrop -->
+<div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-0 right-0 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-space-md">
+<!-- Album Art with Technical Badges -->
+<div class="relative w-full aspect-square rounded-lg overflow-hidden bg-surface-container-highest shadow-2xl group">
+<img class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105" data-alt="Daft Punk Random Access Memories album cover art with iconic dual chrome robot helmets reflecting neon cyan and warm amber studio lighting against a pitch black cosmic background, high fidelity cinematic vinyl artwork presentation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADXeDd6psF2o0sRfao94FnKpqRiT6cw4VmcYlITmh7Qa0bXECrfAXDrodBWsbCVmdup40g3tu01rTRPlSvzsb47buVuXKLX3eY-9hB7Uq3Yxn4-47jhYY4fqtY2YBYwioTPMYfG8fJW02D2lbznylbBSFBPW7OKJXG6Qo2D5cp7fUgN7IzYqmg5b_acZL11pZBQ4N74K4e0RfcHCNo7PqiY8z-36dVJ_mi3h8mgvLOzB9IZX5bijI_"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-transparent to-surface-container-lowest/40 pointer-events-none"></div>
+<!-- Top Floating High-Fidelity Badges -->
+<div class="absolute top-space-sm left-space-sm right-space-sm flex items-center justify-between">
+<span class="px-space-xs py-1 rounded bg-surface-container-lowest/80 backdrop-blur-md text-secondary font-label-sm text-label-sm flex items-center gap-1 shadow-md">
+<span class="material-symbols-outlined text-[14px]">stream</span>
+<span>24-bit / 96kHz FLAC</span>
+</span>
+<span class="px-space-xs py-1 rounded bg-secondary-container/90 text-on-secondary-container font-label-sm text-label-sm uppercase tracking-wider shadow-md">
+                Direct Bitstream
+              </span>
+</div>
+<!-- Live SVG Spectrum Visualizer Overlay -->
+<div class="absolute bottom-space-sm left-space-sm right-space-sm flex items-end justify-between h-14 px-space-xs bg-surface-container-lowest/70 backdrop-blur-md rounded-lg">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-label-md animate-pulse">volume_up</span>
+<span class="font-label-sm text-label-sm tracking-widest text-on-surface">96.0 kHz D/A</span>
+</div>
+<!-- Realtime Multi-Bar Audio Spectrum Inline SVG -->
+<svg class="h-10 w-44 text-secondary" fill="currentColor" viewbox="0 0 160 40">
+<rect class="opacity-90" height="26" rx="2" width="4" x="2" y="14">
+<animate attributename="height" dur="0.9s" repeatcount="indefinite" values="26;10;32;18;26"></animate>
+<animate attributename="y" dur="0.9s" repeatcount="indefinite" values="14;30;8;22;14"></animate>
+</rect>
+<rect class="opacity-80" height="32" rx="2" width="4" x="10" y="8">
+<animate attributename="height" dur="0.8s" repeatcount="indefinite" values="32;18;38;12;32"></animate>
+<animate attributename="y" dur="0.8s" repeatcount="indefinite" values="8;22;2;28;8"></animate>
+</rect>
+<rect class="opacity-70" height="20" rx="2" width="4" x="18" y="20">
+<animate attributename="height" dur="1.1s" repeatcount="indefinite" values="20;34;14;28;20"></animate>
+<animate attributename="y" dur="1.1s" repeatcount="indefinite" values="20;6;26;12;20"></animate>
+</rect>
+<rect class="opacity-95" height="34" rx="2" width="4" x="26" y="6">
+<animate attributename="height" dur="0.75s" repeatcount="indefinite" values="34;22;39;16;34"></animate>
+<animate attributename="y" dur="0.75s" repeatcount="indefinite" values="6;18;1;24;6"></animate>
+</rect>
+<rect class="opacity-85" height="24" rx="2" width="4" x="34" y="16">
+<animate attributename="height" dur="1.0s" repeatcount="indefinite" values="24;36;12;30;24"></animate>
+<animate attributename="y" dur="1.0s" repeatcount="indefinite" values="16;4;28;10;16"></animate>
+</rect>
+<rect class="opacity-100" height="36" rx="2" width="4" x="42" y="4">
+<animate attributename="height" dur="0.65s" repeatcount="indefinite" values="36;14;38;24;36"></animate>
+<animate attributename="y" dur="0.65s" repeatcount="indefinite" values="4;26;2;16;4"></animate>
+</rect>
+<rect class="opacity-75" height="22" rx="2" width="4" x="50" y="18">
+<animate attributename="height" dur="0.95s" repeatcount="indefinite" values="22;30;8;34;22"></animate>
+<animate attributename="y" dur="0.95s" repeatcount="indefinite" values="18;10;32;6;18"></animate>
+</rect>
+<rect class="opacity-90" height="28" rx="2" width="4" x="58" y="12">
+<animate attributename="height" dur="0.85s" repeatcount="indefinite" values="28;12;36;20;28"></animate>
+<animate attributename="y" dur="0.85s" repeatcount="indefinite" values="12;28;4;20;12"></animate>
+</rect>
+<rect class="opacity-70" height="18" rx="2" width="4" x="66" y="22">
+<animate attributename="height" dur="1.05s" repeatcount="indefinite" values="18;28;10;34;18"></animate>
+<animate attributename="y" dur="1.05s" repeatcount="indefinite" values="22;12;30;6;22"></animate>
+</rect>
+<rect class="opacity-85" height="30" rx="2" width="4" x="74" y="10">
+<animate attributename="height" dur="0.7s" repeatcount="indefinite" values="30;16;38;14;30"></animate>
+<animate attributename="y" dur="0.7s" repeatcount="indefinite" values="10;24;2;26;10"></animate>
+</rect>
+<rect class="opacity-90" height="25" rx="2" width="4" x="82" y="15">
+<animate attributename="height" dur="0.9s" repeatcount="indefinite" values="25;35;15;30;25"></animate>
+<animate attributename="y" dur="0.9s" repeatcount="indefinite" values="15;5;25;10;15"></animate>
+</rect>
+<rect class="opacity-95" height="32" rx="2" width="4" x="90" y="8">
+<animate attributename="height" dur="0.82s" repeatcount="indefinite" values="32;20;38;12;32"></animate>
+<animate attributename="y" dur="0.82s" repeatcount="indefinite" values="8;20;2;28;8"></animate>
+</rect>
+<rect class="opacity-80" height="22" rx="2" width="4" x="98" y="18">
+<animate attributename="height" dur="1.15s" repeatcount="indefinite" values="22;32;12;26;22"></animate>
+<animate attributename="y" dur="1.15s" repeatcount="indefinite" values="18;8;28;14;18"></animate>
+</rect>
+<rect class="opacity-85" height="28" rx="2" width="4" x="106" y="12">
+<animate attributename="height" dur="0.88s" repeatcount="indefinite" values="28;16;34;8;28"></animate>
+<animate attributename="y" dur="0.88s" repeatcount="indefinite" values="12;24;6;32;12"></animate>
+</rect>
+<rect class="opacity-60" height="16" rx="2" width="4" x="114" y="24">
+<animate attributename="height" dur="1.0s" repeatcount="indefinite" values="16;28;8;24;16"></animate>
+<animate attributename="y" dur="1.0s" repeatcount="indefinite" values="24;12;32;16;24"></animate>
+</rect>
+<rect class="opacity-75" height="26" rx="2" width="4" x="122" y="14">
+<animate attributename="height" dur="0.9s" repeatcount="indefinite" values="26;10;32;18;26"></animate>
+<animate attributename="y" dur="0.9s" repeatcount="indefinite" values="14;30;8;22;14"></animate>
+</rect>
+<rect class="opacity-65" height="20" rx="2" width="4" x="130" y="20">
+<animate attributename="height" dur="0.78s" repeatcount="indefinite" values="20;30;12;25;20"></animate>
+<animate attributename="y" dur="0.78s" repeatcount="indefinite" values="20;10;28;15;20"></animate>
+</rect>
+<rect class="opacity-70" height="24" rx="2" width="4" x="138" y="16">
+<animate attributename="height" dur="1.1s" repeatcount="indefinite" values="24;14;30;10;24"></animate>
+<animate attributename="y" dur="1.1s" repeatcount="indefinite" values="16;26;10;30;16"></animate>
+</rect>
+</svg>
+</div>
+</div>
+<!-- Track Metadata Info -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-headline-sm" style="font-variation-settings: 'FILL' 1;">album</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface truncate">Give Life Back to Music</h2>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-body-md text-body-md">
+<span class="truncate">Daft Punk • Random Access Memories (10th Anniv.)</span>
+<span class="font-label-md text-label-md text-outline">Track 1 of 13</span>
+</div>
+</div>
+<!-- Timeline Scrubber Bar -->
+<div class="flex flex-col gap-1.5 pt-space-xs">
+<div class="relative w-full h-2 rounded-full bg-surface-container-highest cursor-pointer group">
+<div class="absolute left-0 top-0 bottom-0 w-[42%] bg-secondary rounded-full"></div>
+<div class="absolute left-[42%] -top-1 w-4 h-4 rounded-full bg-on-surface shadow-[0_0_12px_rgba(56,189,248,0.9)] transform -translate-x-1/2"></div>
+</div>
+<div class="flex justify-between items-center font-label-md text-label-md text-outline">
+<span class="text-secondary font-semibold">01:58</span>
+<span>04:34</span>
+</div>
+</div>
+</div>
+<!-- TV Transport Controls (Play Button Focused with Luminous Cyan Halo) -->
+<div class="relative z-10 flex items-center justify-between pt-space-md">
+<button class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-all">
+<span class="material-symbols-outlined text-headline-sm">shuffle</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:text-secondary transition-all">
+<span class="material-symbols-outlined text-headline-md">skip_previous</span>
+</button>
+<!-- 10-FOOT REMOTE FOCUS STATE: Play/Pause Button -->
+<button aria-label="Playback Focused Control" class="w-16 h-16 rounded-full bg-secondary text-surface-container-lowest flex items-center justify-center shadow-[0_0_24px_rgba(56,189,248,0.7)] scale-105 transition-transform">
+<span class="material-symbols-outlined text-display-md" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:text-secondary transition-all">
+<span class="material-symbols-outlined text-headline-md">skip_next</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-secondary transition-all">
+<span class="material-symbols-outlined text-headline-sm">repeat</span>
+</button>
+</div>
+</section>
+<!-- Right Panel: High-Contrast 3m Readable Active Queue Tracklist -->
+<section aria-label="Active Queue Tracklist" class="lg:col-span-7 flex flex-col bg-surface-container-low rounded-xl p-space-md shadow-xl justify-between">
+<div class="flex flex-col gap-space-sm">
+<!-- Queue Header with Direct Jump Options -->
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-headline-md">queue_music</span>
+<h3 class="font-headline-md text-headline-md text-on-surface tracking-tight">Active Queue</h3>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-highest text-outline font-label-sm text-label-sm">13 Tracks</span>
+</div>
+<div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-label-md">sort</span>
+<span>Sequential</span>
+</div>
+</div>
+<!-- High-Contrast TV Accessible Track Rows -->
+<div class="flex flex-col gap-1.5 overflow-hidden">
+<!-- Row 1: Active Playing Item -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-high shadow-[0_0_18px_rgba(56,189,248,0.25)] transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="w-7 text-center font-label-lg text-label-lg text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-headline-sm animate-pulse" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Give Life Back to Music</span>
+<span class="font-body-sm text-body-sm text-secondary truncate">Daft Punk • Nile Rodgers</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-lowest text-secondary font-label-sm text-label-sm tracking-wide">FLAC 24/96</span>
+<span class="font-label-lg text-label-lg text-on-surface">04:34</span>
+</div>
+</div>
+<!-- Row 2: Standard Queue Item -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="w-7 text-center font-label-lg text-label-lg text-outline">02</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">The Game of Love</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Daft Punk</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-lowest text-outline font-label-sm text-label-sm tracking-wide">FLAC 24/96</span>
+<span class="font-label-lg text-label-lg text-on-surface-variant">05:22</span>
+</div>
+</div>
+<!-- Row 3: Standard Queue Item -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="w-7 text-center font-label-lg text-label-lg text-outline">03</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Giorgio by Moroder</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Daft Punk • Giorgio Moroder</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-lowest text-secondary font-label-sm text-label-sm tracking-wide">Hi-Res MQA</span>
+<span class="font-label-lg text-label-lg text-on-surface-variant">09:05</span>
+</div>
+</div>
+<!-- Row 4: Standard Queue Item -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="w-7 text-center font-label-lg text-label-lg text-outline">04</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Within</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Daft Punk • Chilly Gonzales</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-lowest text-outline font-label-sm text-label-sm tracking-wide">FLAC 24/96</span>
+<span class="font-label-lg text-label-lg text-on-surface-variant">03:48</span>
+</div>
+</div>
+<!-- Row 5: Standard Queue Item (DSD Format) -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="w-7 text-center font-label-lg text-label-lg text-outline">05</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Instant Crush</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Daft Punk • Julian Casablancas</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-highest text-tertiary font-label-sm text-label-sm tracking-wide">DSD 2.8MHz</span>
+<span class="font-label-lg text-label-lg text-on-surface-variant">05:37</span>
+</div>
+</div>
+<!-- Row 6: Standard Queue Item -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<span class="w-7 text-center font-label-lg text-label-lg text-outline">06</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Lose Yourself to Dance</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Daft Punk • Pharrell Williams</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-lowest text-outline font-label-sm text-label-sm tracking-wide">FLAC 24/96</span>
+<span class="font-label-lg text-label-lg text-on-surface-variant">05:53</span>
+</div>
+</div>
+</div>
+</div>
+<!-- ExoPlayer Media3 Audio Output Engine Card -->
+<div class="mt-space-md p-space-sm rounded-lg bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-lg bg-secondary/15 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-headline-sm">audio_file</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">ExoPlayer Media3 Architecture</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Direct PCM Passthrough over eARC • 24-bit / 96,000 Hz Stereo • Zero Resampling</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(56,189,248,0.8)]"></span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">BIT-PERFECT</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Bottom Swimlane: Recently Played / Recommended Albums Carousel -->
+<section aria-label="Recently Played Albums" class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-headline-sm">library_music</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Recently Played Albums</h3>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Press Right for More</span>
+</div>
+<!-- 16:9 & Square Hybrid Media Swimlane -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-space-md">
+<!-- Album Card 1 (Hover / Focus Demonstration) -->
+<div class="group flex flex-col gap-space-xs p-space-xs bg-surface-container-low rounded-xl transition-all duration-200 hover:scale-105 hover:bg-surface-container hover:shadow-[0_0_20px_rgba(56,189,248,0.35)] cursor-pointer">
+<div class="relative aspect-square rounded-lg overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Pink Floyd The Dark Side of the Moon iconic glass prism dispersing white light into rainbow spectrum over black backdrop, classic album artwork high resolution cover art" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7YNWQtD7jzOFp_swaVSv6NlmN_DgL_Iq2ZI0xmgdib6AsS_CWrxx2jP8O8rvqgBOrcv9cFOIHtqjABbOXacLCe8x5S67YuOprtAg7V--RcNNX0dZwE0yrUJMDUW3JIqeUMGbDAbMId6lKU3Lp0mxuX76qACogTCzglwIu9tU-lfarkc-2jWS2dl8RFW3HcuLT7o3QGwyJtMXBd1elFTe9XTbDrS3Ey7Rvo98hLaKkvilf0gIkdThW"/>
+<div class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-sm text-secondary font-label-sm text-[10px]">
+              DSD 64
+            </div>
+</div>
+<div class="flex flex-col min-w-0 px-1">
+<span class="font-label-lg text-label-lg text-on-surface truncate group-hover:text-secondary">The Dark Side of the Moon</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Pink Floyd • 1973</span>
+</div>
+</div>
+<!-- Album Card 2 -->
+<div class="group flex flex-col gap-space-xs p-space-xs bg-surface-container-low rounded-xl transition-all duration-200 hover:scale-105 hover:bg-surface-container hover:shadow-[0_0_20px_rgba(56,189,248,0.35)] cursor-pointer">
+<div class="relative aspect-square rounded-lg overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Miles Davis Kind of Blue legendary jazz trumpet album cover photograph with deep blue tones, artistic mood lighting and vintage typography, high quality studio aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe3v9aIsrNt4ByNin11hDMXI7tA3bMQxE1_tf6ase8YaQZAp9gg6Gip1fzfw-eBXBcmIW3LfoRoOpkNbWXKK9OWAgCZzdc3_JcI07tPMlCD_AvyQh8j3yUjOOsei17qN4dO-iS0rPFHxXjhEjPaZC7FRuMLUwfTNuL4i-CcJ3po60L4C-UHMgQ5nwviHpTAqq4vyQ4HskXOkEJcPZ4m6oSUHKWzXAsKeD1HCmuk9dqgyxRcb_9Nctq"/>
+<div class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-sm text-secondary font-label-sm text-[10px]">
+              FLAC 192k
+            </div>
+</div>
+<div class="flex flex-col min-w-0 px-1">
+<span class="font-label-lg text-label-lg text-on-surface truncate group-hover:text-secondary">Kind of Blue</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Miles Davis • 1959</span>
+</div>
+</div>
+<!-- Album Card 3 -->
+<div class="group flex flex-col gap-space-xs p-space-xs bg-surface-container-low rounded-xl transition-all duration-200 hover:scale-105 hover:bg-surface-container hover:shadow-[0_0_20px_rgba(56,189,248,0.35)] cursor-pointer">
+<div class="relative aspect-square rounded-lg overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Radiohead OK Computer album cover artwork featuring abstract highway road maps, cold cyan digital glitches, white vector symbols, and textured graphic design" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjb-yBxTcIMdOPXgzMT1bYJoOPVQClXA7xyaSEY16Udt71oGtV3JmKE2iUBG7dGprzMA1vKBwgNFZc4LdoByJNcfb3k7KTJLKCtDvttGZTDOA9XoQLKXsIwuN0UpAZL797mlaAMlGS2WqHYD6F88apOQtViwG4Wn873vtvVudLd4uNcEMN_FFFc7vfBsXjyzWf5LQ0wBXR0qybz88mjdf10rPa44Kf9gHWUcreADJ5h2tlGV1MAFod"/>
+<div class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-sm text-secondary font-label-sm text-[10px]">
+              FLAC 96k
+            </div>
+</div>
+<div class="flex flex-col min-w-0 px-1">
+<span class="font-label-lg text-label-lg text-on-surface truncate group-hover:text-secondary">OK Computer (OKNOTOK)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Radiohead • 1997</span>
+</div>
+</div>
+<!-- Album Card 4 -->
+<div class="group flex flex-col gap-space-xs p-space-xs bg-surface-container-low rounded-xl transition-all duration-200 hover:scale-105 hover:bg-surface-container hover:shadow-[0_0_20px_rgba(56,189,248,0.35)] cursor-pointer">
+<div class="relative aspect-square rounded-lg overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Steely Dan Aja high fidelity jazz rock album cover with an elegant Japanese model framed in dramatic chiaroscuro shadow against stark obsidian black background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtxzTkE5KFSGZmEv0xHQlqRy7s5bg9zj3H3VhIrlx1mxxYOYCAx8gnU1yw3myGSNkUkr457kX12cXvMkxKPOsEz4YAQcAynoDI6cDgdpuLlZvLSSFFEjHJtUqi19yXehLoFOGM6Tv4PQOC7pnwECxOAmyiyXim_-TWJZgplWVGPJDDbH-bPrjF3YNMb7w452P3Qc6l-T6Gnij0BISK6V85BERt-eoVLEET2gzkDh5QVaWhTScTcu6_"/>
+<div class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-sm text-secondary font-label-sm text-[10px]">
+              SACD Rip
+            </div>
+</div>
+<div class="flex flex-col min-w-0 px-1">
+<span class="font-label-lg text-label-lg text-on-surface truncate group-hover:text-secondary">Aja</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Steely Dan • 1977</span>
+</div>
+</div>
+<!-- Album Card 5 -->
+<div class="group flex flex-col gap-space-xs p-space-xs bg-surface-container-low rounded-xl transition-all duration-200 hover:scale-105 hover:bg-surface-container hover:shadow-[0_0_20px_rgba(56,189,248,0.35)] cursor-pointer">
+<div class="relative aspect-square rounded-lg overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Fleetwood Mac Rumours album cover artwork featuring Mick Fleetwood and Stevie Nicks in theatrical pose with antique crystal ball on textured cream backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCz_xGhfR7rr__3Czytf9BgVJz2gOYOklrps36dPxJMzx1dJ0Y6op15AAFVNXshnDlfGQH4cDFiEFdNl_SV7K5BQ_8WlMixEnMz4ibcJaJ1eEe_6o0nfgpXa6Pe54HE3iLsalES3UqJ_UYMfOPtWpJBSipqmXSLlx5RMBK1u092SROlsOknDfajcDZHrll4H7Lpcb2jgbaSVy-RQ0quHs8wyfYOy5Bm0F0zNHFpyfMSZTZ3O9wZvfKN"/>
+<div class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-sm text-secondary font-label-sm text-[10px]">
+              FLAC 192k
+            </div>
+</div>
+<div class="flex flex-col min-w-0 px-1">
+<span class="font-label-lg text-label-lg text-on-surface truncate group-hover:text-secondary">Rumours</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Fleetwood Mac • 1977</span>
+</div>
+</div>
+<!-- Album Card 6 -->
+<div class="group flex flex-col gap-space-xs p-space-xs bg-surface-container-low rounded-xl transition-all duration-200 hover:scale-105 hover:bg-surface-container hover:shadow-[0_0_20px_rgba(56,189,248,0.35)] cursor-pointer">
+<div class="relative aspect-square rounded-lg overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Kraftwerk The Man-Machine electronic music album artwork featuring constructivist Russian avant-garde red black and white portrait art style with futuristic aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6RnleXSjab_22LMV8ex8TlgoBu0odHvP79PENu-0MpAjTsQEwE_SEHy_Jx0FssuIO-thYlXfmzlGhOvdX4F1ddooBUAVXQ6rgU0k10KKK_nZU5fDZ2aXvzqYH-SwZxSWThgz7iUcHzZAHXqZwdO7ig0YjIRTaJCXXRt98tFrwxZ5UhNXvncvkrMMpZwjXOpPTka_irIvOjvmtOWZz3FwNxNUk_x9XhagQWBWaVdDLN0CLJSL-5604"/>
+<div class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-sm text-secondary font-label-sm text-[10px]">
+              FLAC 48k
+            </div>
+</div>
+<div class="flex flex-col min-w-0 px-1">
+<span class="font-label-lg text-label-lg text-on-surface truncate group-hover:text-secondary">The Man-Machine</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Kraftwerk • 1978</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div></main></div><div class="fixed bottom-space-md right-margin z-50 pointer-events-none"><div class="bg-surface-container-highest/90 backdrop-blur-md px-space-md py-space-xs rounded-full flex items-center gap-space-sm shadow-[0_12px_32px_rgba(11,17,32,0.8)]"><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">DPAD:</span> Navigate</span><span class="text-outline font-label-sm text-label-sm">•</span><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">OK:</span> Select</span><span class="text-outline font-label-sm text-label-sm">•</span><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">BACK:</span> Exit</span></div></div></body></html>

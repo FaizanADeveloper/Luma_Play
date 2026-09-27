@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "inverse-on-surface": "#2a3040", "on-surface-variant": "#c2c6d5", "surface-tint": "#adc6ff", "on-secondary-container": "#00374d", "on-primary-fixed": "#001a41", "on-tertiary-fixed": "#23005c", "on-secondary": "#00354a", "background": "#0d1322", "on-background": "#dde2f8", "on-secondary-fixed": "#001e2c", "on-primary-fixed-variant": "#004494", "surface-container-highest": "#2f3445", "error": "#ffb4ab", "primary": "#adc6ff", "on-tertiary": "#3c0091", "surface-variant": "#2f3445", "surface-container-high": "#242a3a", "on-tertiary-container": "#340080", "on-surface": "#dde2f8", "secondary-fixed-dim": "#7bd0ff", "surface-container-low": "#151b2b", "secondary-fixed": "#c4e7ff", "on-error": "#690005", "outline": "#8c909f", "on-error-container": "#ffdad6", "primary-container": "#4d8efe", "tertiary-container": "#a078ff", "surface-dim": "#0d1322", "primary-fixed-dim": "#adc6ff", "secondary": "#7bd0ff", "secondary-container": "#00a6e0", "tertiary-fixed-dim": "#d0bcff", "tertiary": "#d0bcff", "inverse-surface": "#dde2f8", "tertiary-fixed": "#e9ddff", "on-primary": "#002e69", "surface-bright": "#33394a", "error-container": "#93000a", "surface-container": "#191f2f", "primary-fixed": "#d8e2ff", "on-primary-container": "#00285c", "inverse-primary": "#005ac1", "outline-variant": "#424753", "surface-container-lowest": "#080e1d", "on-tertiary-fixed-variant": "#5516be", "surface": "#0d1322", "on-secondary-fixed-variant": "#004c69" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin": "3.5rem", "space-lg": "2rem", "space-xl": "3rem", "space-md": "1.25rem", "space-sm": "0.75rem", "space-xs": "0.5rem", "gutter": "1.5rem" }, "fontFamily": { "label-md": ["Inter"], "label-lg": ["Inter"], "headline-sm": ["Inter"], "headline-md": ["Inter"], "display-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "headline-lg": ["Inter"], "display-lg": ["Inter"], "body-sm": ["Inter"] }, "fontSize": { "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.04em", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "22px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "600" }], "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-md": ["38px", { "lineHeight": "46px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0.01em", "fontWeight": "400" }], "body-lg": ["18px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "400" }] } } } };</script></head><body class="bg-background font-body-md text-body-md text-on-surface min-h-screen selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between p-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-md"><div class="flex items-center gap-space-xs px-space-xs py-space-xs"><img alt="LumaPlay TV Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WU5Ye_-a20htm_RRsgdrzJVpX1IPFGM9A_1t2gxGktfdRWH6iBrH4_zCL3PkvGgloCC80pgsFy305vCtt-4chHkRjHO91uDWs6ai30z-HpVWMamsjHzb-aVXJj8dJ6uI1_2KEtijGEIJsJ8hzNG8Kc4BEllUFg6tfvq9tUrdK0nZFM739QkJTgrPOGqHT_tIqAEEEGFhdfCIimRU-S7JbCScC8aazIS-fUV15ZEGfMLRpmchsGl13qvg"/><span class="font-headline-md text-headline-md text-on-surface tracking-tight">LumaPlay</span></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-label-lg shadow-[0_0_20px_rgba(56,189,248,0.35)]"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="home" href="#"><span class="material-symbols-outlined text-secondary">home</span><span class="font-label-lg text-label-lg">Home</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="videos" href="#"><span class="material-symbols-outlined text-secondary">movie</span><span class="font-label-lg text-label-lg">Videos</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="music" href="#"><span class="material-symbols-outlined text-secondary">music_note</span><span class="font-label-lg text-label-lg">Music</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="folders" href="#"><span class="material-symbols-outlined text-secondary">folder</span><span class="font-label-lg text-label-lg">Folders</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="search" href="#"><span class="material-symbols-outlined text-secondary">search</span><span class="font-label-lg text-label-lg">Search</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined text-secondary">settings</span><span class="font-label-lg text-label-lg">Settings</span></a></nav></div><div class="flex flex-col gap-space-sm"><div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="h-2 w-2 rounded-full bg-secondary-container animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface-variant truncate max-w-[140px]">SanDisk 1TB USB</span></div><span class="font-label-sm text-label-sm text-secondary">Connected</span></div><div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden"><div class="bg-secondary h-full w-[56%]"></div></div><div class="flex justify-between items-center"><span class="font-label-sm text-label-sm text-outline">438 GB Free</span><span class="font-label-sm text-label-sm text-outline">1 TB</span></div></div><div class="flex items-center justify-between px-space-xs py-space-xs bg-surface-container-lowest rounded-lg"><span class="font-label-md text-label-md text-outline">TV System</span><span class="font-headline-sm text-headline-sm text-on-surface">08:45 PM</span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 flex items-center justify-between px-margin shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-xs"><span class="font-label-sm text-label-sm bg-surface-container-high px-space-xs py-1 rounded text-secondary">1080p Cinema Mode</span></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs text-on-surface-variant"><span class="material-symbols-outlined text-label-lg">wifi</span><span class="font-label-sm text-label-sm">LAN Connected</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="w-full pt-16 bg-background min-h-screen px-margin pb-margin"><div class="flex flex-col w-full">
+<!-- Ensure sidebar shows 'Folders' as active tab via client script on load -->
+<script>
+    (function syncTvSidebar() {
+      const navLinks = document.querySelectorAll('aside nav a');
+      navLinks.forEach(link => {
+        if (link.getAttribute('data-path') === 'folders') {
+          link.classList.remove('text-on-surface-variant');
+          link.classList.add('bg-surface-container-high', 'text-on-surface', 'font-label-lg', 'shadow-[0_0_20px_rgba(56,189,248,0.35)]');
+          const icon = link.querySelector('.material-symbols-outlined');
+          if (icon) {
+            icon.classList.remove('text-secondary');
+            icon.classList.add('text-secondary-fixed');
+            icon.style.fontVariationSettings = "'FILL' 1";
+          }
+        } else {
+          link.classList.remove('bg-surface-container-high', 'shadow-[0_0_20px_rgba(56,189,248,0.35)]');
+          link.classList.add('text-on-surface-variant');
+        }
+      });
+    })();
+  </script>
+<!-- Top System & Volume Status Strip (Sub-Header) -->
+<section class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md py-space-sm mb-space-md">
+<!-- Breadcrumb Chain (D-pad Focusable Chips) -->
+<div class="flex items-center flex-wrap gap-space-xs">
+<div class="flex items-center gap-space-xs text-outline font-label-sm uppercase tracking-widest mr-1">
+<span class="material-symbols-outlined text-secondary text-sm">folder_open</span>
+<span>PATH:</span>
+</div>
+<!-- Breadcrumb Chip 1 -->
+<button class="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface focus:bg-surface-container-high focus:text-on-surface focus:outline-none transition-all" type="button">
+<span class="material-symbols-outlined text-sm text-outline group-hover:text-secondary group-focus:text-secondary">dns</span>
+<span class="font-label-md text-label-md">Storage Root</span>
+</button>
+<span class="text-outline/50 font-label-sm">/</span>
+<!-- Breadcrumb Chip 2 (Drive Root) -->
+<button class="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface focus:bg-surface-container-high focus:text-on-surface focus:outline-none transition-all" type="button">
+<span class="material-symbols-outlined text-sm text-secondary">usb</span>
+<span class="font-label-md text-label-md">Samsung T7 1TB (USB OTG)</span>
+</button>
+<span class="text-outline/50 font-label-sm">/</span>
+<!-- Breadcrumb Chip 3 -->
+<button class="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface focus:bg-surface-container-high focus:text-on-surface focus:outline-none transition-all" type="button">
+<span class="font-label-md text-label-md">Movies</span>
+</button>
+<span class="text-outline/50 font-label-sm">/</span>
+<!-- Active Leaf Folder -->
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high text-secondary font-label-lg text-label-lg shadow-sm">
+<span class="material-symbols-outlined text-sm text-secondary" style="font-variation-settings: 'FILL' 1;">folder</span>
+<span>Sci-Fi &amp; IMAX</span>
+</div>
+</div>
+<!-- Drive Telemetry & Free Capacity Meter -->
+<div class="flex items-center gap-space-md bg-surface-container-lowest px-space-md py-space-xs rounded-xl shadow-md min-w-[340px]">
+<div class="flex flex-col gap-1 w-full">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="h-2 w-2 rounded-full bg-secondary animate-ping"></span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold tracking-wide">Samsung T7 Shield (exFAT)</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">54.2% Avail</span>
+</div>
+<!-- Dual Tone Track -->
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden flex">
+<div class="bg-secondary-container h-full w-[45.8%] transition-all"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span>542 GB free of 1,000 GB</span>
+<span class="text-[10px] text-outline/80 tracking-tighter truncate max-w-[170px]" title="/mnt/media_rw/T7_SHIELD">/mnt/media_rw/T7_SHIELD</span>
+</div>
+</div>
+<div class="h-8 w-px bg-surface-container-highest hidden sm:block"></div>
+<div class="hidden sm:flex flex-col items-center justify-center shrink-0">
+<span class="font-label-sm text-label-sm text-outline uppercase text-[10px]">I/O Health</span>
+<span class="font-label-md text-label-md text-secondary font-bold">OPTIMAL</span>
+</div>
+</div>
+</section>
+<!-- Main Viewport: Split Layout (Browser Grid & Live TV File Inspector) -->
+<div class="grid grid-cols-12 gap-space-lg items-start">
+<!-- Left 8 Columns: Folders & Media Grid -->
+<div class="col-span-12 xl:col-span-8 flex flex-col gap-space-lg">
+<!-- Folders Section Swimlane -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-headline-sm">folder_open</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Subfolders</h2>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">4</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Sort: Alphabetical (A-Z)</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-space-md">
+<!-- Folder Card 1 -->
+<div class="group relative flex flex-col justify-between p-space-sm bg-surface-container-low rounded-xl transition-all duration-200 cursor-pointer hover:bg-surface-container hover:scale-[1.03] focus:bg-surface-container-high focus:scale-[1.04] focus:shadow-[0_0_24px_rgba(56,189,248,0.45)] focus:outline-none" tabindex="0">
+<div class="flex items-start justify-between">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center group-focus:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary group-focus:text-on-secondary-container text-headline-md" style="font-variation-settings: 'FILL' 1;">folder</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">14 files</span>
+</div>
+<div class="mt-space-md">
+<h3 class="font-label-lg text-label-lg text-on-surface group-focus:text-secondary truncate">Dune Duology [4K Remux]</h3>
+<p class="font-label-sm text-label-sm text-outline mt-0.5">Mod: Oct 24, 2024</p>
+</div>
+</div>
+<!-- Folder Card 2 -->
+<div class="group relative flex flex-col justify-between p-space-sm bg-surface-container-low rounded-xl transition-all duration-200 cursor-pointer hover:bg-surface-container hover:scale-[1.03] focus:bg-surface-container-high focus:scale-[1.04] focus:shadow-[0_0_24px_rgba(56,189,248,0.45)] focus:outline-none" tabindex="0">
+<div class="flex items-start justify-between">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center group-focus:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary group-focus:text-on-secondary-container text-headline-md" style="font-variation-settings: 'FILL' 1;">folder</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">22 files</span>
+</div>
+<div class="mt-space-md">
+<h3 class="font-label-lg text-label-lg text-on-surface group-focus:text-secondary truncate">Christopher Nolan Col.</h3>
+<p class="font-label-sm text-label-sm text-outline mt-0.5">Mod: Nov 02, 2024</p>
+</div>
+</div>
+<!-- Folder Card 3 -->
+<div class="group relative flex flex-col justify-between p-space-sm bg-surface-container-low rounded-xl transition-all duration-200 cursor-pointer hover:bg-surface-container hover:scale-[1.03] focus:bg-surface-container-high focus:scale-[1.04] focus:shadow-[0_0_24px_rgba(56,189,248,0.45)] focus:outline-none" tabindex="0">
+<div class="flex items-start justify-between">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center group-focus:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary group-focus:text-on-secondary-container text-headline-md" style="font-variation-settings: 'FILL' 1;">folder</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">6 files</span>
+</div>
+<div class="mt-space-md">
+<h3 class="font-label-lg text-label-lg text-on-surface group-focus:text-secondary truncate">Blade Runner 4K</h3>
+<p class="font-label-sm text-label-sm text-outline mt-0.5">Mod: Sep 18, 2024</p>
+</div>
+</div>
+<!-- Folder Card 4 (Audio Folder) -->
+<div class="group relative flex flex-col justify-between p-space-sm bg-surface-container-low rounded-xl transition-all duration-200 cursor-pointer hover:bg-surface-container hover:scale-[1.03] focus:bg-surface-container-high focus:scale-[1.04] focus:shadow-[0_0_24px_rgba(56,189,248,0.45)] focus:outline-none" tabindex="0">
+<div class="flex items-start justify-between">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center group-focus:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary group-focus:text-on-secondary-container text-headline-md" style="font-variation-settings: 'FILL' 1;">folder_special</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">38 tracks</span>
+</div>
+<div class="mt-space-md">
+<h3 class="font-label-lg text-label-lg text-on-surface group-focus:text-secondary truncate">Lossless Soundtracks</h3>
+<p class="font-label-sm text-label-sm text-outline mt-0.5">Mod: Aug 12, 2024</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Video & Media Files Section -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-headline-sm">video_file</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Directory Files</h2>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">3 items</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-outline text-label-lg">filter_alt</span>
+<span class="font-label-sm text-label-sm text-outline">Filter: All Formats</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- ITEM 1: Dune Part Two (FOCUSED STATE BY DEFAULT) -->
+<div class="group relative p-space-md rounded-xl bg-surface-container-high transition-all duration-200 cursor-pointer scale-[1.02] shadow-[0_0_24px_rgba(56,189,248,0.45)] outline-none flex flex-col md:flex-row md:items-center justify-between gap-space-md" tabindex="0">
+<!-- Active Focus Indicator Left Bar -->
+<div class="absolute left-0 top-3 bottom-3 w-1.5 bg-secondary rounded-r-full"></div>
+<div class="flex items-center gap-space-md pl-2 min-w-0">
+<!-- Thumbnail Preview Box -->
+<div class="relative w-28 h-16 rounded-lg overflow-hidden shrink-0 bg-surface-container-lowest">
+<img class="w-full h-full object-cover" data-alt="Cinematic high contrast film frame of desert dunes at golden sunset with shimmering atmospheric heat distortion and deep cinematic shadows from Dune 2024 movie, 4k master capture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSxi9dFD2WiYl9aSNR5CGd6jEYvAcXRDRyhzihB1QSIKmgPUsF59sdfsEgpsWyzPZ1mtdsPh12tgXLsYez0q78bw24GSjrLSXubF-ulmFfVNp3FvA66IswdhV4AMZHsLBdtRJ29nKb2IqVVlw9K85-7RlNi99AQoiews0C0iGGU40SzuGKWH6OsJVq6oI1xWqOtmhYuYGm4ftYgTdbs_q-XUNCvJ_WuyY1vAW1iBxRt52QBmhsDVZW"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent"></div>
+<span class="absolute bottom-1 right-1 font-label-sm text-[10px] bg-surface-container-lowest/80 px-1 rounded text-on-surface font-mono">02:46:11</span>
+<!-- MKV Badge -->
+<span class="absolute top-1 left-1 font-label-sm text-[9px] uppercase px-1 rounded bg-secondary text-on-secondary font-bold">MKV</span>
+</div>
+<!-- Title & Secondary Badges -->
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate group-focus:text-secondary">Dune.Part.Two.2024.2160p.UHD.BluRay.x265.mkv</h3>
+</div>
+<div class="flex items-center flex-wrap gap-1.5 mt-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-secondary font-label-sm text-label-sm font-bold uppercase tracking-wider">4K UHD</span>
+<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-label-sm text-label-sm font-bold uppercase tracking-wider">HDR10+</span>
+<span class="px-2 py-0.5 rounded bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-bold uppercase tracking-wider">TrueHD 7.1 Atmos</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm font-mono">x265 10-bit</span>
+</div>
+</div>
+</div>
+<!-- Size & Action Indicator -->
+<div class="flex items-center justify-between md:justify-end gap-space-md shrink-0 pl-2 md:pl-0">
+<div class="text-right">
+<div class="font-headline-sm text-headline-sm text-on-surface font-mono">34.8 GB</div>
+<div class="font-label-sm text-label-sm text-secondary">Ready to Stream</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-on-secondary shadow-lg">
+<span class="material-symbols-outlined text-headline-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+</div>
+<!-- ITEM 2: Interstellar -->
+<div class="group relative p-space-md rounded-xl bg-surface-container-low transition-all duration-200 cursor-pointer hover:bg-surface-container hover:scale-[1.01] focus:bg-surface-container-high focus:scale-[1.02] focus:shadow-[0_0_24px_rgba(56,189,248,0.45)] focus:outline-none flex flex-col md:flex-row md:items-center justify-between gap-space-md" tabindex="0">
+<div class="flex items-center gap-space-md min-w-0">
+<!-- Thumbnail Preview Box -->
+<div class="relative w-28 h-16 rounded-lg overflow-hidden shrink-0 bg-surface-container-lowest">
+<img class="w-full h-full object-cover" data-alt="Space wormhole cosmic visual with iridescent accretion disc, deep midnight navy starfield, glowing stellar matter from Christopher Nolan movie Interstellar, ultra high dynamic range." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcydg2mJxb_rQ_4UoZajn381KZPG4BgRFcDk-nfh-ytJ18QNQwiVDdw0z5lIp300mifwO-QcHjJaKncSj_RvlWPiAIIQutXdFNfrmGOP3ttjTMT4gJJ3PYnJm19o_OyJF4M1P6Xnj5ko8SIHQxYfBLrUkAPVfXHQmJHn2KgUayumT2DITfr8vkIkefBQv0PpYHTDg0Na39OwWNlgzDNiGvwl_PqNZXnkey4z9LdNlTw_JMjCuWjlzR"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent"></div>
+<span class="absolute bottom-1 right-1 font-label-sm text-[10px] bg-surface-container-lowest/80 px-1 rounded text-on-surface font-mono">02:49:03</span>
+<span class="absolute top-1 left-1 font-label-sm text-[9px] uppercase px-1 rounded bg-surface-container-highest text-on-surface-variant font-bold">MKV</span>
+</div>
+<!-- Title & Badges -->
+<div class="flex flex-col min-w-0">
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate group-focus:text-secondary">Interstellar.2014.IMAX.2160p.DTS-HD.MA.mkv</h3>
+<div class="flex items-center flex-wrap gap-1.5 mt-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-secondary font-label-sm text-label-sm font-bold uppercase tracking-wider">4K UHD</span>
+<span class="px-2 py-0.5 rounded bg-tertiary-container/30 text-tertiary-fixed font-label-sm text-label-sm font-bold uppercase tracking-wider">IMAX Enhanced</span>
+<span class="px-2 py-0.5 rounded bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-bold uppercase tracking-wider">DTS-HD MA 5.1</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm font-mono">Bitrate: 68 Mbps</span>
+</div>
+</div>
+</div>
+<!-- Size & Action Indicator -->
+<div class="flex items-center justify-between md:justify-end gap-space-md shrink-0">
+<div class="text-right">
+<div class="font-headline-sm text-headline-sm text-on-surface font-mono">28.4 GB</div>
+<div class="font-label-sm text-label-sm text-outline">Direct Play</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant group-focus:bg-secondary group-focus:text-on-secondary transition-colors">
+<span class="material-symbols-outlined text-headline-sm">play_arrow</span>
+</div>
+</div>
+</div>
+<!-- ITEM 3: Unsupported Codec File -->
+<div class="group relative p-space-md rounded-xl bg-surface-container-lowest opacity-70 transition-all duration-200 cursor-not-allowed hover:bg-surface-container-low focus:bg-surface-container-high focus:scale-[1.01] focus:shadow-[0_0_20px_rgba(255,180,171,0.3)] focus:outline-none flex flex-col md:flex-row md:items-center justify-between gap-space-md" tabindex="0">
+<div class="flex items-center gap-space-md min-w-0">
+<!-- Thumbnail with alert -->
+<div class="relative w-28 h-16 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error text-display-md">error_outline</span>
+<span class="absolute top-1 left-1 font-label-sm text-[9px] uppercase px-1 rounded bg-error-container text-on-error-container font-bold">AVI</span>
+</div>
+<!-- Title & Warning -->
+<div class="flex flex-col min-w-0">
+<h3 class="font-label-lg text-label-lg text-outline truncate group-focus:text-on-surface">sample_unsupported_codec.avi</h3>
+<div class="flex items-center flex-wrap gap-1.5 mt-1.5">
+<span class="px-2 py-0.5 rounded bg-error-container text-error font-label-sm text-label-sm font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">warning</span>
+                    UNSUPPORTED CODEC (Indeo 4)
+                  </span>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm font-mono">Legacy 480p SD</span>
+</div>
+</div>
+</div>
+<!-- Size & Disabled Tag -->
+<div class="flex items-center justify-between md:justify-end gap-space-md shrink-0">
+<div class="text-right">
+<div class="font-label-lg text-label-lg text-outline font-mono">740 MB</div>
+<div class="font-label-sm text-label-sm text-error">Transcode Required</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-headline-sm">block</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Storage Quick Tools Strip -->
+<section class="p-space-md rounded-xl bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-headline-sm">cached</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-on-surface">Auto-Library Sync Active</h4>
+<p class="font-label-sm text-label-sm text-outline">New video files placed in this folder will auto-generate NFO metadata and posters.</p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<button class="px-space-md py-2 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest focus:bg-secondary focus:text-on-secondary font-label-md text-label-md transition-all" type="button">
+            Scan Subfolders
+          </button>
+<button class="px-space-md py-2 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest focus:bg-secondary focus:text-on-secondary font-label-md text-label-md transition-all" type="button">
+            Safely Eject Drive
+          </button>
+</div>
+</section>
+</div>
+<!-- Right 4 Columns: Side Technical Inspector & Media Spec Panel -->
+<div class="col-span-12 xl:col-span-4 flex flex-col gap-space-md">
+<!-- Focused File Inspector Card -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md shadow-xl relative overflow-hidden">
+<!-- Ambient Radial Glow Accent -->
+<div class="absolute -right-16 -top-16 w-48 h-48 rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
+<!-- Card Header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-headline-sm">dvr</span>
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Technical Inspector</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-secondary/15 text-secondary font-label-sm text-label-sm font-mono">SELECTED</span>
+</div>
+<!-- Poster Snapshot & Synopsis Preview -->
+<div class="relative w-full aspect-video rounded-lg overflow-hidden bg-surface-container-highest shadow-md">
+<img class="w-full h-full object-cover" data-alt="High quality film still portrait of Paul Atreides and Chani standing in the golden desert dunes with high-definition digital cinema lighting, sharp focus, cinema aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjEq4CUbdqqgaWMHnKpgkKUYMU1DlR7gsRLpcsV6dSco5sCRP6I4FZ_6U3Q3G-NYYo238PiFoBQx43jQedzfUYxsPw3uhhyJJnLBxiDMmtK7KXeU2ahnxovJMmyEpgLGhp51JJU2HCxw2R0BhylFrMTbxFuJzAdCqEmqQ6ZXMurrD9C7XLMxMuIV3p3E20Hi6r5yXGUe0JSUNnjmC44OHYEEIC_iZaRclP9l344r3C0zcBEGAJ8Wl-"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="absolute bottom-2 left-3 right-3 flex items-end justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">Dune: Part Two (2024)</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant line-clamp-1">Denis Villeneuve • Warner Bros.</p>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-bright text-on-surface font-mono">PG-13</span>
+</div>
+</div>
+<!-- Raw Filesystem & POSIX Metadata -->
+<div class="flex flex-col gap-2.5">
+<div class="text-[11px] font-mono uppercase tracking-wider text-outline">Filesystem Node Info</div>
+<div class="bg-surface-container-lowest p-2.5 rounded-lg flex flex-col gap-2 font-mono text-xs">
+<div class="flex flex-col gap-0.5">
+<span class="text-outline text-[10px]">ABSOLUTE POSIX PATH:</span>
+<span class="text-on-surface break-all select-all font-semibold">/mnt/media_rw/T7_SHIELD/Movies/Sci-Fi &amp; IMAX/Dune.Part.Two.2024.2160p.UHD.BluRay.x265.mkv</span>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-2 border-t border-surface-container-highest">
+<div>
+<span class="text-outline text-[10px] block">ACCESS PERMS:</span>
+<span class="text-secondary font-bold">Read-Only (r-xr-xr-x)</span>
+</div>
+<div>
+<span class="text-outline text-[10px] block">INODE NUMBER:</span>
+<span class="text-on-surface">#98410294</span>
+</div>
+</div>
+</div>
+</div>
+<!-- I/O Speed Benchmark Telemetry Visualizer -->
+<div class="bg-surface-container-lowest p-space-sm rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-secondary">speed</span>
+              OTG Bus Read Benchmark
+            </span>
+<span class="font-label-sm text-label-sm text-secondary font-mono font-bold">145 MB/s</span>
+</div>
+<!-- Speed Meter Sparkline SVG -->
+<div class="h-10 w-full flex items-end">
+<svg class="w-full h-9 overflow-visible text-secondary" preserveaspectratio="none" viewbox="0 0 280 40">
+<defs>
+<lineargradient id="speedGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="currentColor" stop-opacity="0.4"></stop>
+<stop offset="100%" stop-color="currentColor" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<path d="M0 32 Q 35 15, 70 24 T 140 10 T 210 18 T 280 6 L 280 40 L 0 40 Z" fill="url(#speedGrad)"></path>
+<path d="M0 32 Q 35 15, 70 24 T 140 10 T 210 18 T 280 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<div class="flex items-center justify-between text-[10px] font-mono text-outline">
+<span>Buffer Margin: 4.8x (No Stutter)</span>
+<span class="text-secondary">Latency: 4.2ms</span>
+</div>
+</div>
+<!-- Media Stream Breakdown Specs -->
+<div class="flex flex-col gap-2">
+<span class="text-[11px] font-mono uppercase tracking-wider text-outline">Detected Codec Streams</span>
+<div class="grid grid-cols-2 gap-space-xs">
+<div class="p-2 rounded bg-surface-container-high flex flex-col">
+<span class="text-[10px] text-outline uppercase">Video Track</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">HEVC Main 10</span>
+<span class="text-[11px] font-mono text-secondary">3840x2160 @ 23.976 fps</span>
+</div>
+<div class="p-2 rounded bg-surface-container-high flex flex-col">
+<span class="text-[10px] text-outline uppercase">Audio Track 1</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Dolby Atmos / TrueHD</span>
+<span class="text-[11px] font-mono text-secondary">8 Ch • 48.0 kHz • 24-bit</span>
+</div>
+<div class="p-2 rounded bg-surface-container-high flex flex-col">
+<span class="text-[10px] text-outline uppercase">Subtitles (Embedded)</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">PGS / UTF-8</span>
+<span class="text-[11px] font-mono text-outline">English [Forced], Spanish</span>
+</div>
+<div class="p-2 rounded bg-surface-container-high flex flex-col">
+<span class="text-[10px] text-outline uppercase">Indexing Status</span>
+<span class="font-label-md text-label-md text-secondary font-semibold">Metadata Cached</span>
+<span class="text-[11px] font-mono text-outline">Hash: MD5 Validated</span>
+</div>
+</div>
+</div>
+<!-- Immediate Playback Remote Action -->
+<div class="flex gap-space-xs pt-1">
+<button class="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg font-bold shadow-[0_0_16px_rgba(56,189,248,0.5)] hover:scale-[1.02] focus:scale-[1.04] focus:outline-none transition-all" type="button">
+<span class="material-symbols-outlined text-headline-sm" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+<span>Play Cinema Remux</span>
+</button>
+<button class="px-3 py-3 rounded-lg bg-surface-container-highest text-on-surface hover:bg-surface-bright focus:scale-[1.05] focus:outline-none transition-all" title="More Options" type="button">
+<span class="material-symbols-outlined text-headline-sm">more_vert</span>
+</button>
+</div>
+</div>
+<!-- USB Storage Drive Specs Card -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-2">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm font-mono uppercase">Interface Spec</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">USB 3.2 Gen 2 (10 Gbps)</span>
+</div>
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm font-mono uppercase">Block Size</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">128 KB Cluster</span>
+</div>
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm font-mono uppercase">Smart Status</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">PASSED (0 Bad Sectors)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom TV Remote Key Legend Bar (Fixed Position Remote Guidance) -->
+<div class="mt-space-xl pt-space-md pb-space-lg flex items-center justify-center">
+<div class="bg-surface-container-lowest/95 backdrop-blur-xl px-space-lg py-space-sm rounded-full flex flex-wrap items-center justify-center gap-space-md shadow-[0_12px_36px_rgba(0,0,0,0.7)]">
+<!-- Key 1: DPAD -->
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest font-mono text-label-sm text-secondary font-bold">DPAD</span>
+<span class="font-label-sm text-label-sm text-on-surface">Navigate Files</span>
+</div>
+<span class="text-outline/40 font-label-sm">•</span>
+<!-- Key 2: OK -->
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-secondary text-on-secondary font-mono text-label-sm font-bold shadow-sm">OK</span>
+<span class="font-label-sm text-label-sm text-on-surface">Open / Play</span>
+</div>
+<span class="text-outline/40 font-label-sm">•</span>
+<!-- Key 3: HOLD OK -->
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest font-mono text-label-sm text-secondary font-bold">HOLD OK</span>
+<span class="font-label-sm text-label-sm text-on-surface">File Details</span>
+</div>
+<span class="text-outline/40 font-label-sm">•</span>
+<!-- Key 4: BLUE KEY -->
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-mono text-label-sm font-bold shadow-sm">BLUE</span>
+<span class="font-label-sm text-label-sm text-on-surface">Rescan Folder</span>
+</div>
+<span class="text-outline/40 font-label-sm">•</span>
+<!-- Key 5: BACK -->
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest font-mono text-label-sm text-outline font-bold">BACK</span>
+<span class="font-label-sm text-label-sm text-on-surface">Up One Level</span>
+</div>
+</div>
+</div>
+<!-- Inline D-Pad Keyboard Simulation for Testing -->
+<script>
+    document.addEventListener('keydown', function(e) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        const focusable = Array.from(document.querySelectorAll('[tabindex="0"], button'));
+        const index = focusable.indexOf(document.activeElement);
+        if (index > -1) {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            const next = focusable[(index + 1) % focusable.length];
+            next.focus();
+            e.preventDefault();
+          } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            const prev = focusable[(index - 1 + focusable.length) % focusable.length];
+            prev.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    });
+  </script>
+</div></main></div><div class="fixed bottom-space-md right-margin z-50 pointer-events-none"><div class="bg-surface-container-highest/90 backdrop-blur-md px-space-md py-space-xs rounded-full flex items-center gap-space-sm shadow-[0_12px_32px_rgba(11,17,32,0.8)]"><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">DPAD:</span> Navigate</span><span class="text-outline font-label-sm text-label-sm">•</span><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">OK:</span> Select</span><span class="text-outline font-label-sm text-label-sm">•</span><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">BACK:</span> Exit</span></div></div></body></html>

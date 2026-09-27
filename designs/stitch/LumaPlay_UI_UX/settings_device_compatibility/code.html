@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "inverse-on-surface": "#2a3040", "on-surface-variant": "#c2c6d5", "surface-tint": "#adc6ff", "on-secondary-container": "#00374d", "on-primary-fixed": "#001a41", "on-tertiary-fixed": "#23005c", "on-secondary": "#00354a", "background": "#0d1322", "on-background": "#dde2f8", "on-secondary-fixed": "#001e2c", "on-primary-fixed-variant": "#004494", "surface-container-highest": "#2f3445", "error": "#ffb4ab", "primary": "#adc6ff", "on-tertiary": "#3c0091", "surface-variant": "#2f3445", "surface-container-high": "#242a3a", "on-tertiary-container": "#340080", "on-surface": "#dde2f8", "secondary-fixed-dim": "#7bd0ff", "surface-container-low": "#151b2b", "secondary-fixed": "#c4e7ff", "on-error": "#690005", "outline": "#8c909f", "on-error-container": "#ffdad6", "primary-container": "#4d8efe", "tertiary-container": "#a078ff", "surface-dim": "#0d1322", "primary-fixed-dim": "#adc6ff", "secondary": "#7bd0ff", "secondary-container": "#00a6e0", "tertiary-fixed-dim": "#d0bcff", "tertiary": "#d0bcff", "inverse-surface": "#dde2f8", "tertiary-fixed": "#e9ddff", "on-primary": "#002e69", "surface-bright": "#33394a", "error-container": "#93000a", "surface-container": "#191f2f", "primary-fixed": "#d8e2ff", "on-primary-container": "#00285c", "inverse-primary": "#005ac1", "outline-variant": "#424753", "surface-container-lowest": "#080e1d", "on-tertiary-fixed-variant": "#5516be", "surface": "#0d1322", "on-secondary-fixed-variant": "#004c69" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin": "3.5rem", "space-lg": "2rem", "space-xl": "3rem", "space-md": "1.25rem", "space-sm": "0.75rem", "space-xs": "0.5rem", "gutter": "1.5rem" }, "fontFamily": { "label-md": ["Inter"], "label-lg": ["Inter"], "headline-sm": ["Inter"], "headline-md": ["Inter"], "display-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "headline-lg": ["Inter"], "display-lg": ["Inter"], "body-sm": ["Inter"] }, "fontSize": { "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.04em", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "22px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "600" }], "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-md": ["38px", { "lineHeight": "46px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0.01em", "fontWeight": "400" }], "body-lg": ["18px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "400" }] } } } };</script></head><body class="bg-background font-body-md text-body-md text-on-surface min-h-screen selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between p-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-md"><div class="flex items-center gap-space-xs px-space-xs py-space-xs"><img alt="LumaPlay TV Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WU5Ye_-a20htm_RRsgdrzJVpX1IPFGM9A_1t2gxGktfdRWH6iBrH4_zCL3PkvGgloCC80pgsFy305vCtt-4chHkRjHO91uDWs6ai30z-HpVWMamsjHzb-aVXJj8dJ6uI1_2KEtijGEIJsJ8hzNG8Kc4BEllUFg6tfvq9tUrdK0nZFM739QkJTgrPOGqHT_tIqAEEEGFhdfCIimRU-S7JbCScC8aazIS-fUV15ZEGfMLRpmchsGl13qvg"/><span class="font-headline-md text-headline-md text-on-surface tracking-tight">LumaPlay</span></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-label-lg shadow-[0_0_20px_rgba(56,189,248,0.35)]"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="home" href="#"><span class="material-symbols-outlined text-secondary">home</span><span class="font-label-lg text-label-lg">Home</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="videos" href="#"><span class="material-symbols-outlined text-secondary">movie</span><span class="font-label-lg text-label-lg">Videos</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="music" href="#"><span class="material-symbols-outlined text-secondary">music_note</span><span class="font-label-lg text-label-lg">Music</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="folders" href="#"><span class="material-symbols-outlined text-secondary">folder</span><span class="font-label-lg text-label-lg">Folders</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="search" href="#"><span class="material-symbols-outlined text-secondary">search</span><span class="font-label-lg text-label-lg">Search</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined text-secondary">settings</span><span class="font-label-lg text-label-lg">Settings</span></a></nav></div><div class="flex flex-col gap-space-sm"><div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="h-2 w-2 rounded-full bg-secondary-container animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface-variant truncate max-w-[140px]">SanDisk 1TB USB</span></div><span class="font-label-sm text-label-sm text-secondary">Connected</span></div><div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden"><div class="bg-secondary h-full w-[56%]"></div></div><div class="flex justify-between items-center"><span class="font-label-sm text-label-sm text-outline">438 GB Free</span><span class="font-label-sm text-label-sm text-outline">1 TB</span></div></div><div class="flex items-center justify-between px-space-xs py-space-xs bg-surface-container-lowest rounded-lg"><span class="font-label-md text-label-md text-outline">TV System</span><span class="font-headline-sm text-headline-sm text-on-surface">08:45 PM</span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 flex items-center justify-between px-margin shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-xs"><span class="font-label-sm text-label-sm bg-surface-container-high px-space-xs py-1 rounded text-secondary">1080p Cinema Mode</span></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs text-on-surface-variant"><span class="material-symbols-outlined text-label-lg">wifi</span><span class="font-label-sm text-label-sm">LAN Connected</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="w-full pt-16 bg-background min-h-screen px-margin pb-margin"><div class="flex flex-col w-full">
+<div class="flex flex-col gap-space-lg w-full max-w-[1720px] mx-auto pb-space-xl">
+<div class="flex items-end justify-between">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-bold">Hardware Diagnostics</span>
+<span class="text-outline text-label-sm">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">ExoPlayer Media3 Architecture</span>
+</div>
+<h1 class="font-display-md text-display-md text-on-surface tracking-tight">System &amp; Audio-Visual Settings</h1>
+</div>
+<div class="flex items-center gap-space-sm bg-surface-container-high px-space-md py-space-xs rounded-xl shadow-md">
+<span class="material-symbols-outlined text-secondary text-headline-sm animate-pulse">developer_board</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">SoC Pipeline</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Amlogic S905X4-K (4x Cortex-A55 @ 2.0GHz)</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-gutter items-start">
+<!-- Left Sub-Navigation Column -->
+<nav aria-label="Settings Categories" class="col-span-4 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline">tune</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">General</span>
+<span class="font-body-sm text-body-sm text-outline">Appearance, Theme, Clock</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-label-lg">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline">dns</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">Library &amp; Storage</span>
+<span class="font-body-sm text-body-sm text-outline">Rescan, Auto-index USB</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-label-lg">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline">smart_display</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">Video Playback</span>
+<span class="font-body-sm text-body-sm text-outline">Hardware Decoders, Refresh Rate</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-label-lg">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline">spatial_audio</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">Audio Playback &amp; Passthrough</span>
+<span class="font-body-sm text-body-sm text-outline">eARC, Bitstream, Dolby/DTS</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-label-lg">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline">subtitles</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">Subtitles &amp; Styling</span>
+<span class="font-body-sm text-body-sm text-outline">Font size, Color, Encoding</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-label-lg">chevron_right</span>
+</div>
+<!-- FOCUSED ITEM -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-high text-on-surface scale-[1.02] shadow-[0_0_24px_rgba(123,208,255,0.35)] relative overflow-hidden transition-all duration-150">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary shadow-[0_0_12px_#7bd0ff]"></div>
+<div class="flex items-center gap-space-sm pl-space-xs">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">memory</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-secondary font-bold">Device Compatibility &amp; Decoders</span>
+<span class="font-body-sm text-body-sm text-on-surface">Direct MediaCodec &amp; Sink Profiler</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-headline-sm">arrow_forward</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline">info</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">About &amp; Licenses</span>
+<span class="font-body-sm text-body-sm text-outline">LumaPlay v2.4.1 (Stable 64-bit)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-label-lg">chevron_right</span>
+</div>
+<!-- Real-time Peripheral Status Card -->
+<div class="mt-space-md p-space-md bg-surface-container-lowest rounded-xl flex flex-col gap-space-sm">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Active Pipeline Route</span>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary">tv</span>
+<span class="font-label-md text-label-md text-on-surface">HDMI 2.1 eARC</span>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-high px-space-xs py-0.5 rounded text-secondary font-mono">48 Gbps</span>
+</div>
+<div class="flex items-center justify-between text-outline font-body-sm text-body-sm">
+<span>Color Space</span>
+<span class="text-on-surface font-label-md text-label-md">YCbCr 4:2:2 12-bit</span>
+</div>
+</div>
+</nav>
+<!-- Right Detail / Configuration Pane -->
+<div class="col-span-8 flex flex-col gap-space-md">
+<!-- Detected Output Endpoints Banner -->
+<div class="grid grid-cols-2 gap-space-md">
+<div class="p-space-md bg-surface-container-high rounded-xl flex flex-col gap-space-xs relative overflow-hidden shadow-lg">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-secondary">
+<span class="material-symbols-outlined text-headline-sm">desktop_windows</span>
+<span class="font-label-sm text-label-sm uppercase font-bold tracking-wider">Primary Display</span>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest text-secondary px-space-xs py-0.5 rounded font-mono">HDCP 2.3</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Sony BRAVIA 4K OLED</span>
+<span class="font-body-sm text-body-sm text-outline">3840×2160 @ 119.88Hz Native • ALLM Active • VRR Certified</span>
+</div>
+<div class="p-space-md bg-surface-container-high rounded-xl flex flex-col gap-space-xs relative overflow-hidden shadow-lg">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-tertiary">
+<span class="material-symbols-outlined text-headline-sm">speaker_group</span>
+<span class="font-label-sm text-label-sm uppercase font-bold tracking-wider">Audio Sink</span>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest text-tertiary px-space-xs py-0.5 rounded font-mono">eARC Connected</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Sonos Arc 7.1.4 Surround</span>
+<span class="font-body-sm text-body-sm text-outline">8-Channel Direct Uncompressed LPCM &amp; Bitstream Passthrough</span>
+</div>
+</div>
+<!-- Video Hardware Capabilities -->
+<div class="p-space-md bg-surface-container rounded-xl flex flex-col gap-space-md shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary">videocam</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Video Hardware Decoders</h2>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest px-space-xs py-0.5 rounded text-outline font-mono">Android c2.goldfish / amlogic</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">HEVC / H.265</span>
+<span class="font-label-sm text-label-sm bg-surface-container-highest text-secondary px-space-xs py-0.5 rounded font-mono font-bold">HARDWARE</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline font-mono">c2.goldfish.hevc.decoder</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Main 10, Level 5.1 • 4K UHD @ 60fps</span>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">AV1 (AOMedia Video 1)</span>
+<span class="font-label-sm text-label-sm bg-surface-container-highest text-secondary px-space-xs py-0.5 rounded font-mono font-bold">HARDWARE</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline font-mono">c2.android.av1.decoder</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Main Profile 8/10-bit • 4K UHD @ 60fps</span>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">VP9</span>
+<span class="font-label-sm text-label-sm bg-surface-container-highest text-secondary px-space-xs py-0.5 rounded font-mono font-bold">HARDWARE</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline font-mono">c2.goldfish.vp9.decoder</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Profile 2 10-bit HDR • 4K UHD @ 60fps</span>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">AVC / H.264</span>
+<span class="font-label-sm text-label-sm bg-surface-container-highest text-secondary px-space-xs py-0.5 rounded font-mono font-bold">HARDWARE</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline font-mono">c2.goldfish.avc.decoder</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">High Profile Level 5.2 • 1080p @ 120fps / 4K @ 30fps</span>
+</div>
+</div>
+</div>
+<!-- HDR Standards Detected & Verified -->
+<div class="p-space-md bg-surface-container rounded-xl flex flex-col gap-space-sm shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary">hdr_on</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">HDR Display Standards</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline font-medium">EDID Handshake Verified</span>
+</div>
+<div class="grid grid-cols-4 gap-space-sm">
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">HDR10</span>
+<span class="material-symbols-outlined text-secondary text-label-lg font-bold">check_circle</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">SMPTE ST 2086</span>
+<span class="font-body-sm text-body-sm text-secondary font-medium">Supported</span>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">HDR10+</span>
+<span class="material-symbols-outlined text-secondary text-label-lg font-bold">check_circle</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Dynamic Tone Map</span>
+<span class="font-body-sm text-body-sm text-secondary font-medium">Supported</span>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">Dolby Vision</span>
+<span class="material-symbols-outlined text-secondary text-label-lg font-bold">check_circle</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Profiles 5, 8.1, 8.4</span>
+<span class="font-body-sm text-body-sm text-secondary font-medium">Supported</span>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">HLG</span>
+<span class="material-symbols-outlined text-secondary text-label-lg font-bold">check_circle</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Hybrid Log-Gamma</span>
+<span class="font-body-sm text-body-sm text-secondary font-medium">Supported</span>
+</div>
+</div>
+</div>
+<!-- Audio Decoders & HDMI Passthrough -->
+<div class="p-space-md bg-surface-container rounded-xl flex flex-col gap-space-sm shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary">surround_sound</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Audio Decoding &amp; HDMI Passthrough</h2>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-highest px-space-xs py-0.5 rounded text-secondary font-mono">AudioTrack IEC61937</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-headline-sm">album</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">Dolby TrueHD / Dolby Atmos</span>
+<span class="font-body-sm text-body-sm text-outline">Lossless Multi-channel Object-Based Audio</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-highest px-space-sm py-1 rounded text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-label-md font-bold">check</span>
+                Direct Bitstream (eARC)
+              </div>
+</div>
+<div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-headline-sm">speaker</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">Dolby Digital Plus (E-AC-3 / Atmos)</span>
+<span class="font-body-sm text-body-sm text-outline">Enhanced AC-3 with Joint Object Coding</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-highest px-space-sm py-1 rounded text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-label-md font-bold">check</span>
+                HW Decode &amp; Passthrough
+              </div>
+</div>
+<div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-headline-sm">graphic_eq</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">DTS-HD Master Audio &amp; DTS:X</span>
+<span class="font-body-sm text-body-sm text-outline">Discrete Core + Extension Object Stream</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-highest px-space-sm py-1 rounded text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-label-md font-bold">check</span>
+                Bitstream Passthrough Active
+              </div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs pt-space-xs">
+<div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">FLAC 24-bit / 192kHz</span>
+<span class="font-body-sm text-body-sm text-outline">Audiophile Studio Master</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">Bit-Perfect LPCM</span>
+</div>
+<div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">DSD over PCM (DoP)</span>
+<span class="font-body-sm text-body-sm text-outline">Direct Stream Digital DSD64/128</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">Native Direct Out</span>
+</div>
+</div>
+</div>
+</div>
+<!-- FOCUSED REMOTE ACTION CARD -->
+<div class="mt-space-xs p-space-md bg-surface-container-high rounded-xl scale-[1.03] shadow-[0_0_24px_rgba(123,208,255,0.45),0_12px_32px_rgba(11,17,32,0.8)] relative overflow-hidden transition-all duration-150 flex items-center justify-between cursor-pointer">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-secondary shadow-[0_0_12px_#7bd0ff]"></div>
+<div class="flex items-center gap-space-md pl-space-xs">
+<div class="w-12 h-12 rounded-lg bg-surface-container-lowest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-display-md">speed</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Run Automated Hardware Benchmark</span>
+<span class="font-label-sm text-label-sm bg-secondary text-on-secondary px-space-xs py-0.5 rounded font-bold uppercase">Ready</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Stress test frame-drop rates across 4K AV1, 8K HEVC, and verify bitstream handshake latency</span>
+</div>
+</div>
+<button class="bg-secondary text-on-secondary hover:bg-secondary-fixed font-label-lg text-label-lg px-space-md py-space-sm rounded-lg flex items-center gap-space-xs font-bold shadow-md transition-colors">
+<span>Execute Test</span>
+<span class="material-symbols-outlined text-label-lg">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div></main></div><div class="fixed bottom-space-md right-margin z-50 pointer-events-none"><div class="bg-surface-container-highest/90 backdrop-blur-md px-space-md py-space-xs rounded-full flex items-center gap-space-sm shadow-[0_12px_32px_rgba(11,17,32,0.8)]"><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">DPAD:</span> Navigate</span><span class="text-outline font-label-sm text-label-sm">•</span><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">OK:</span> Select</span><span class="text-outline font-label-sm text-label-sm">•</span><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">BACK:</span> Exit</span></div></div></body></html>

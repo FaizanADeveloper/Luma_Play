@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "inverse-on-surface": "#2a3040", "on-surface-variant": "#c2c6d5", "surface-tint": "#adc6ff", "on-secondary-container": "#00374d", "on-primary-fixed": "#001a41", "on-tertiary-fixed": "#23005c", "on-secondary": "#00354a", "background": "#0d1322", "on-background": "#dde2f8", "on-secondary-fixed": "#001e2c", "on-primary-fixed-variant": "#004494", "surface-container-highest": "#2f3445", "error": "#ffb4ab", "primary": "#adc6ff", "on-tertiary": "#3c0091", "surface-variant": "#2f3445", "surface-container-high": "#242a3a", "on-tertiary-container": "#340080", "on-surface": "#dde2f8", "secondary-fixed-dim": "#7bd0ff", "surface-container-low": "#151b2b", "secondary-fixed": "#c4e7ff", "on-error": "#690005", "outline": "#8c909f", "on-error-container": "#ffdad6", "primary-container": "#4d8efe", "tertiary-container": "#a078ff", "surface-dim": "#0d1322", "primary-fixed-dim": "#adc6ff", "secondary": "#7bd0ff", "secondary-container": "#00a6e0", "tertiary-fixed-dim": "#d0bcff", "tertiary": "#d0bcff", "inverse-surface": "#dde2f8", "tertiary-fixed": "#e9ddff", "on-primary": "#002e69", "surface-bright": "#33394a", "error-container": "#93000a", "surface-container": "#191f2f", "primary-fixed": "#d8e2ff", "on-primary-container": "#00285c", "inverse-primary": "#005ac1", "outline-variant": "#424753", "surface-container-lowest": "#080e1d", "on-tertiary-fixed-variant": "#5516be", "surface": "#0d1322", "on-secondary-fixed-variant": "#004c69" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin": "3.5rem", "space-lg": "2rem", "space-xl": "3rem", "space-md": "1.25rem", "space-sm": "0.75rem", "space-xs": "0.5rem", "gutter": "1.5rem" }, "fontFamily": { "label-md": ["Inter"], "label-lg": ["Inter"], "headline-sm": ["Inter"], "headline-md": ["Inter"], "display-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "headline-lg": ["Inter"], "display-lg": ["Inter"], "body-sm": ["Inter"] }, "fontSize": { "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.04em", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "22px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "600" }], "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-md": ["38px", { "lineHeight": "46px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0.01em", "fontWeight": "400" }], "body-lg": ["18px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "400" }] } } } };</script></head><body class="bg-background font-body-md text-body-md text-on-surface min-h-screen selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between p-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-md"><div class="flex items-center gap-space-xs px-space-xs py-space-xs"><img alt="LumaPlay TV Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WU5Ye_-a20htm_RRsgdrzJVpX1IPFGM9A_1t2gxGktfdRWH6iBrH4_zCL3PkvGgloCC80pgsFy305vCtt-4chHkRjHO91uDWs6ai30z-HpVWMamsjHzb-aVXJj8dJ6uI1_2KEtijGEIJsJ8hzNG8Kc4BEllUFg6tfvq9tUrdK0nZFM739QkJTgrPOGqHT_tIqAEEEGFhdfCIimRU-S7JbCScC8aazIS-fUV15ZEGfMLRpmchsGl13qvg"/><span class="font-headline-md text-headline-md text-on-surface tracking-tight">LumaPlay</span></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-label-lg shadow-[0_0_20px_rgba(56,189,248,0.35)]"><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg transition-all bg-surface-container-high text-on-surface font-label-lg shadow-[0_0_20px_rgba(56,189,248,0.35)]" data-path="home" href="#"><span class="material-symbols-outlined text-secondary">home</span><span class="font-label-lg text-label-lg">Home</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="videos" href="#"><span class="material-symbols-outlined text-secondary">movie</span><span class="font-label-lg text-label-lg">Videos</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="music" href="#"><span class="material-symbols-outlined text-secondary">music_note</span><span class="font-label-lg text-label-lg">Music</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="folders" href="#"><span class="material-symbols-outlined text-secondary">folder</span><span class="font-label-lg text-label-lg">Folders</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="search" href="#"><span class="material-symbols-outlined text-secondary">search</span><span class="font-label-lg text-label-lg">Search</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined text-secondary">settings</span><span class="font-label-lg text-label-lg">Settings</span></a></nav></div><div class="flex flex-col gap-space-sm"><div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="h-2 w-2 rounded-full bg-secondary-container animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface-variant truncate max-w-[140px]">SanDisk 1TB USB</span></div><span class="font-label-sm text-label-sm text-secondary">Connected</span></div><div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden"><div class="bg-secondary h-full w-[56%]"></div></div><div class="flex justify-between items-center"><span class="font-label-sm text-label-sm text-outline">438 GB Free</span><span class="font-label-sm text-label-sm text-outline">1 TB</span></div></div><div class="flex items-center justify-between px-space-xs py-space-xs bg-surface-container-lowest rounded-lg"><span class="font-label-md text-label-md text-outline">TV System</span><span class="font-headline-sm text-headline-sm text-on-surface">08:45 PM</span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 flex items-center justify-between px-margin shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-xs"><span class="font-label-sm text-label-sm bg-surface-container-high px-space-xs py-1 rounded text-secondary">1080p Cinema Mode</span></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs text-on-surface-variant"><span class="material-symbols-outlined text-label-lg">wifi</span><span class="font-label-sm text-label-sm">LAN Connected</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="w-full pt-16 bg-background min-h-screen px-margin pb-margin"><div class="flex flex-col w-full">
+<!-- Hero Section (Immersive Cinematic Backdrop) -->
+<div class="relative w-full rounded-xl overflow-hidden bg-surface-container-lowest -mt-4 shadow-2xl">
+<!-- Hero Backdrop Image -->
+<div class="w-full h-[460px] bg-cover bg-center relative" data-alt="Epic cinematic still from Dune Part Two featuring expansive golden-orange desert dunes of Arrakis under a hazy harsh dual sun, mysterious spice clouds shimmering, high fidelity 4K film still with deep midnight shadows on the edges and cinematic color grading." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDc6DOVqLYOhvnOVbS_z6ws22AivQrG2dlUwT3JbUlc9zjJvj04-foYQI_duru8kPkjPHITEZkawp7ryFaUc9gYpEGIXKQJYYgjNJHIquUtA2NTCYVOqrZ1_As02SG3SGUwaxdMRryETsRVzAWqx9yXvoob6tixC9JfVyXtq_PcjWT3ZU03YLIhG7-kpF2B1MrzME198GlPV9wkgXlSc-8wZiw0VniZsofH8Wrx2G39HgXbrjIb_new')">
+<!-- Vignette Gradients: TV Safe Left Scrim & Bottom Dissolve -->
+<div class="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent w-3/4"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+<!-- Hero Content Overlay -->
+<div class="absolute inset-0 p-space-lg flex flex-col justify-end max-w-4xl z-10">
+<!-- Breadcrumb / Location Anchor -->
+<div class="flex items-center gap-space-xs mb-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-secondary">folder_special</span>
+<span class="font-label-sm text-label-sm tracking-wider uppercase text-outline">Internal Storage / Movies / Sci-Fi</span>
+</div>
+<!-- Cinema Title -->
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight leading-none mb-space-xs drop-shadow-md">
+          Dune: Part Two (2024)
+        </h1>
+<!-- Spec Badges Row -->
+<div class="flex flex-wrap items-center gap-space-xs mb-space-sm">
+<span class="bg-surface-container-high text-secondary px-2.5 py-0.5 rounded font-label-sm text-label-sm uppercase font-bold tracking-wider">
+            4K UHD
+          </span>
+<span class="bg-surface-container-high text-secondary px-2.5 py-0.5 rounded font-label-sm text-label-sm uppercase font-bold tracking-wider">
+            HDR10+
+          </span>
+<span class="bg-surface-container-high text-on-surface-variant px-2.5 py-0.5 rounded font-label-sm text-label-sm uppercase tracking-wider">
+            HEVC 10-BIT
+          </span>
+<span class="bg-surface-container-high text-secondary px-2.5 py-0.5 rounded font-label-sm text-label-sm uppercase font-bold tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">surround_sound</span> Dolby Atmos 7.1
+          </span>
+<span class="text-outline font-label-sm text-label-sm">•</span>
+<span class="text-on-surface font-label-md text-label-md">2h 46m</span>
+</div>
+<!-- Synopsis Excerpt -->
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl line-clamp-2 mb-space-md drop-shadow">
+          Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family, facing a choice between love and the fate of the universe.
+        </p>
+<!-- Remote Action Buttons (TV D-Pad Target) -->
+<div class="flex items-center gap-space-sm" id="hero-actions">
+<!-- Focused Primary Button -->
+<button class="scale-105 bg-secondary text-on-secondary px-space-md py-3 rounded-lg font-label-lg text-label-lg flex items-center gap-space-xs shadow-[0_0_24px_rgba(123,208,255,0.6)] transition-all outline-none" type="button">
+<span class="material-symbols-outlined text-headline-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Resume at 1:14:20</span>
+</button>
+<!-- Secondary Button -->
+<button class="bg-surface-container-high/70 hover:bg-surface-container-high text-on-surface px-space-md py-3 rounded-lg font-label-lg text-label-lg flex items-center gap-space-xs backdrop-blur-md transition-all outline-none" type="button">
+<span class="material-symbols-outlined text-headline-sm">replay</span>
+<span>Start Over</span>
+</button>
+<!-- Tertiary Button -->
+<button class="bg-surface-container-high/70 hover:bg-surface-container-high text-on-surface px-space-md py-3 rounded-lg font-label-lg text-label-lg flex items-center gap-space-xs backdrop-blur-md transition-all outline-none" type="button">
+<span class="material-symbols-outlined text-headline-sm">info</span>
+<span>Details &amp; Specs</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Continue Watching Section -->
+<section class="mt-space-lg">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-headline-sm">history</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Continue Watching</h2>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">4 items in progress</span>
+</div>
+<!-- Horizontal TV Carousel Grid -->
+<div class="grid grid-cols-4 gap-gutter">
+<!-- Item 1: Oppenheimer -->
+<div class="group relative flex flex-col bg-surface-container rounded-xl overflow-hidden shadow-md hover:scale-[1.03] transition-transform duration-200">
+<div class="relative w-full aspect-video bg-surface-container-lowest overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="Moody cinematic portrait of theoretical physicist J. Robert Oppenheimer standing before a glowing chalkboard of mathematical equations with orange sparks of atomic fire reflection, deep dramatic shadows, high detail 4K cinematic still." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDId9vZkbfDm4ppkDFqWTEQM24Ew6jT692dEF3C2U_mHgx1wJ0XDRMrDrob0f-vL3TuPII5cI84XY8JcAgrRtUaUCSQC0B7hEBJMCc7f2XTYSSZctb2pYPV7xRpsW26q_xm-gHdTeLxId-3CnykffwY9cMbYIf2OBXe07FqONKgJMR6PASdue4n6fmk-ep7Z9mLvbGwrzyTOJTF4SghQ9x3I5PQFgdIFz08h18nsQ5qag7wT7LocMwZ')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<!-- Tech Tag Overlay Top Right -->
+<div class="absolute top-2 right-2 flex items-center gap-1">
+<span class="bg-surface-container-lowest/80 backdrop-blur-sm text-secondary px-1.5 py-0.5 rounded font-label-sm text-label-sm uppercase font-bold">4K HDR</span>
+</div>
+<!-- Time Left Bottom Right -->
+<span class="absolute bottom-2 right-2 font-label-sm text-label-sm text-on-surface bg-surface-container-lowest/80 px-1.5 py-0.5 rounded backdrop-blur-sm">
+            1h 08m left
+          </span>
+<!-- Playback Progress Bar -->
+<div class="absolute bottom-0 left-0 right-0 h-1.5 bg-surface-container-highest">
+<div class="h-full bg-secondary" style="width: 60%;"></div>
+</div>
+</div>
+<div class="p-space-sm flex flex-col justify-between flex-grow">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">Oppenheimer (2023)</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">1h 42m watched • HEVC</p>
+</div>
+</div>
+</div>
+<!-- Item 2: Blade Runner 2049 -->
+<div class="group relative flex flex-col bg-surface-container rounded-xl overflow-hidden shadow-md hover:scale-[1.03] transition-transform duration-200">
+<div class="relative w-full aspect-video bg-surface-container-lowest overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="Cyberpunk sci-fi city illuminated in vibrant neon cyan, electric blue, and deep rain-drenched shadows with a spinner flying vehicle soaring past monumental holographic advertisements, ultra high resolution cinematic still." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDrOvPpxIUxN2a58EqdR7oyiAIPLrmfEMwGa6GENTBBD4EzyHSUG66BxpyNjjr6hpLklwuP7rxORVcJ4jxyWU0e9daAeKAfkJFUO0TGLlVF3XMQRoYWXpK0sWFhy1M1iGsDfZU2LZIr7aefyfFKyGARogGIYLNjDlsF692NXeU9Ic8BC_QCNkZ3POAzfG52XmssLkBYUvBuFUo9lh_RyWTUaeLtNr0MDMS1IMoxXw48Lfu3Lx0mTLgJ')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="absolute top-2 right-2 flex items-center gap-1">
+<span class="bg-surface-container-lowest/80 backdrop-blur-sm text-secondary px-1.5 py-0.5 rounded font-label-sm text-label-sm uppercase font-bold">4K DV</span>
+</div>
+<span class="absolute bottom-2 right-2 font-label-sm text-label-sm text-on-surface bg-surface-container-lowest/80 px-1.5 py-0.5 rounded backdrop-blur-sm">
+            1h 45m left
+          </span>
+<div class="absolute bottom-0 left-0 right-0 h-1.5 bg-surface-container-highest">
+<div class="h-full bg-secondary" style="width: 36%;"></div>
+</div>
+</div>
+<div class="p-space-sm flex flex-col justify-between flex-grow">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">Blade Runner 2049</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">58m watched • Atmos</p>
+</div>
+</div>
+</div>
+<!-- Item 3: Interstellar -->
+<div class="group relative flex flex-col bg-surface-container rounded-xl overflow-hidden shadow-md hover:scale-[1.03] transition-transform duration-200">
+<div class="relative w-full aspect-video bg-surface-container-lowest overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="Gargantua glowing accretion disk black hole in deep pitch-black space bending golden starlight in a cosmic gravitational lensing ring, with the Endurance spacecraft silhouetted, awe-inspiring sci-fi shot." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC67xnZEX-E7t8s4dEKGHbtSzbS9IprbxDlhpSNWLiLuOBouYYcN4_WA9nZDgNgi5yObCsU48ubzqXaEo7R7XVAw_2TBg6vW2iyDdwVCDIKz0DWq2m3csOlh7mvX44Mh0uwpfaSX1sHds3xsm84vV82aZUooCVUiw98Eo_gM3O_CCzObkjDyDrkxWI4mMKteHoL_bUyx6zz7VqeZg4Lc6wgLBam4YOufKQC5fKKs28_rL3K2BfUhYhQ')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="absolute top-2 right-2 flex items-center gap-1">
+<span class="bg-surface-container-lowest/80 backdrop-blur-sm text-on-surface px-1.5 py-0.5 rounded font-label-sm text-label-sm uppercase font-bold">IMAX</span>
+</div>
+<span class="absolute bottom-2 right-2 font-label-sm text-label-sm text-on-surface bg-surface-container-lowest/80 px-1.5 py-0.5 rounded backdrop-blur-sm">
+            44m left
+          </span>
+<div class="absolute bottom-0 left-0 right-0 h-1.5 bg-surface-container-highest">
+<div class="h-full bg-secondary" style="width: 75%;"></div>
+</div>
+</div>
+<div class="p-space-sm flex flex-col justify-between flex-grow">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">Interstellar</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">2h 10m watched • DTS-HD</p>
+</div>
+</div>
+</div>
+<!-- Item 4: Across the Spider-Verse -->
+<div class="group relative flex flex-col bg-surface-container rounded-xl overflow-hidden shadow-md hover:scale-[1.03] transition-transform duration-200">
+<div class="relative w-full aspect-video bg-surface-container-lowest overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="Dynamic stylized comic-book multiverse animation with neon pink, cyan blue, and bold halftones depicting characters leaping through a gravity-defying kaleidoscopic futuristic city skyline." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBy6ug63EKw9kOS-4I8cqcBKeJ5LVck9GKMaLAxhPLulsYI7wgM8PCyEgxNpEGJ52h4r4FHhVVmSHdzGlhX4Wz0D8PgnyShLfZ61h266PkU18lF25Yt8me80kDfnsJ0r_ISp1aQwL7MWSkpdbhEnQjJX72KR2vr-bFDczKOss8b2GVfVZDCfHJhZWb4kGwS3LTa8YRXDSEzOvXqhEAousyOwP6H1FCcQ6myBgH33OPJVz5xy79sxbjl')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="absolute top-2 right-2 flex items-center gap-1">
+<span class="bg-surface-container-lowest/80 backdrop-blur-sm text-secondary px-1.5 py-0.5 rounded font-label-sm text-label-sm uppercase font-bold">4K HDR</span>
+</div>
+<span class="absolute bottom-2 right-2 font-label-sm text-label-sm text-on-surface bg-surface-container-lowest/80 px-1.5 py-0.5 rounded backdrop-blur-sm">
+            1h 35m left
+          </span>
+<div class="absolute bottom-0 left-0 right-0 h-1.5 bg-surface-container-highest">
+<div class="h-full bg-secondary" style="width: 32%;"></div>
+</div>
+</div>
+<div class="p-space-sm flex flex-col justify-between flex-grow">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">Spider-Man: Across the Spider-Verse</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">45m watched • Atmos</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Recently Added Videos Carousel -->
+<section class="mt-space-lg">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-headline-sm">new_releases</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Recently Added Videos</h2>
+</div>
+<a class="font-label-md text-label-md text-secondary hover:underline flex items-center gap-1" href="#">
+        Browse All Library <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<!-- Media Grid 4 Columns -->
+<div class="grid grid-cols-4 gap-gutter">
+<!-- Media 1: The Batman -->
+<div class="group relative flex flex-col bg-surface-container rounded-xl overflow-hidden shadow-md hover:scale-[1.03] transition-transform duration-200">
+<div class="relative w-full aspect-video bg-surface-container-lowest overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="Dark, atmospheric rainy noir Gotham City street bathed in crimson red ambient flares, silhouette of the vigilante detective walking slowly toward camera through heavy rain, high dynamic range 4K presentation." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD-KPIjFOBOT1OYqy2D_cm02_OX9swGzL-MjL3PdAkHxMDqldrWjmd0eGR4OZHGd_SclFUndn_kMrNKW7TpIJJx2SxbTLma0-9W_34Vvb6shenHZvrNsp4EJuO7-VcytR0ubpyfAdMvpkW87hXTE4d-XZ5CVdgXZf3-8d5N1797eEgSVxfOgOjvlBhwioBWZkjtR5WiXufOblZoyF7jE_J9HZgsPgruu9q5WmLlxZIbhyNFU38E5jcQ')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<span class="absolute top-2 left-2 bg-surface-container-high/90 text-on-surface font-label-sm text-label-sm px-2 py-0.5 rounded backdrop-blur-sm">
+            NEW
+          </span>
+</div>
+<div class="p-space-sm flex flex-col justify-between flex-grow">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">The Batman</h3>
+<div class="flex items-center gap-space-xs mt-1">
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container-high px-1.5 py-0.5 rounded">28.4 GB</span>
+<span class="text-outline font-label-sm text-label-sm">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">HEVC 10-bit</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Media 2: Civil War -->
+<div class="group relative flex flex-col bg-surface-container rounded-xl overflow-hidden shadow-md hover:scale-[1.03] transition-transform duration-200">
+<div class="relative w-full aspect-video bg-surface-container-lowest overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="Photojournalistic style shot of a dystopian highway with abandoned military vehicles under a brooding overcast sky, cinematic contrast, dust in the air, intense photo-realistic drama." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBscp2IgiDy9WeoSO5PM5odOl3fB4jKLJeVwTdzOD2B80XO3h1WpmVGOfjUn_HnpOyO2LSGVqlEVPALC53f8rgbmdQMHEwg8SS88cabVCK_uMU7gbM2JRtO6mY3p-25fZdnklaJxKgEUtTTf9Ap71YKzKg2Jif-JRxTWCQTqy88kzq6X8BkKY7gO5fSLpvBIp3MI7nq4AeDqBxZ66VdHoI60VwIUhrhwjGmPgm-zIPOHRP-xXiKoYQG')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<span class="absolute top-2 left-2 bg-surface-container-high/90 text-on-surface font-label-sm text-label-sm px-2 py-0.5 rounded backdrop-blur-sm">
+            NEW
+          </span>
+</div>
+<div class="p-space-sm flex flex-col justify-between flex-grow">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">Civil War (2024)</h3>
+<div class="flex items-center gap-space-xs mt-1">
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container-high px-1.5 py-0.5 rounded">18.6 GB</span>
+<span class="text-outline font-label-sm text-label-sm">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">AV1 4K</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Media 3: Past Lives -->
+<div class="group relative flex flex-col bg-surface-container rounded-xl overflow-hidden shadow-md hover:scale-[1.03] transition-transform duration-200">
+<div class="relative w-full aspect-video bg-surface-container-lowest overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="Subtle warm golden hour aesthetic in an intimate urban cafe setting with soft natural window illumination reflecting two figures conversing deeply across a wooden table, 35mm film grain style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCEFSmefUiTydj8xR8M6G4pzQxKFt9eXA845Z5meAphtAGs7kp0tyypvhv9KGIdWKhIP3SrYeZU8fBiHTdYru8XnRuBI3CyXBIfEpIVIvqDYg-mHSCGqRJMI5CARbqtxOw7d4La_4jbcDSnwlEvBXK6OEWvsl1dD_LEQ2WNQxmbJvvk3K-5XenkCk-IUOTHNX55C-aEfYkrfzOjULTYSFGOTNp5PBjVgEMxEbNMcbseXQDgGbKzFmiL')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+</div>
+<div class="p-space-sm flex flex-col justify-between flex-grow">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">Past Lives</h3>
+<div class="flex items-center gap-space-xs mt-1">
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container-high px-1.5 py-0.5 rounded">11.2 GB</span>
+<span class="text-outline font-label-sm text-label-sm">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">HEVC 1080p</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Media 4: Arrival -->
+<div class="group relative flex flex-col bg-surface-container rounded-xl overflow-hidden shadow-md hover:scale-[1.03] transition-transform duration-200">
+<div class="relative w-full aspect-video bg-surface-container-lowest overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300" data-alt="Monolithic curved alien spacecraft hovering silently over a green misty valley in Montana, low-hanging clouds and soft diffused morning atmosphere, profound sense of scale." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBlpAVlYEvxhdbLbAmzHA3teKXnpEi5rMi9nTTzgNZAbUmBfv-WVgpd8KwCBzNo-omTjsnYmxVNGegSwYMg4WwDdmHLUtayGJGDB19vC2hLlsfq8lwWsHhLhc4TzSSZYdbyxOES7Yx3-ilrCDHO6NZgOaGdXd2xWeZjejehMwUCkQxbMI8108XAwBleRpJW-hdz-Gtc0D6tFziKa3mk4aHFsqlf9h5KTalBljRbH9dWh2AtpTTtoIZK')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+</div>
+<div class="p-space-sm flex flex-col justify-between flex-grow">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">Arrival</h3>
+<div class="flex items-center gap-space-xs mt-1">
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container-high px-1.5 py-0.5 rounded">14.2 GB</span>
+<span class="text-outline font-label-sm text-label-sm">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">AV1 4K</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Storage & Indexing Diagnostics Widget (TV Safe Footer Bar) -->
+<section class="mt-space-lg mb-space-sm">
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-center justify-between shadow-lg">
+<div class="flex items-center gap-space-md">
+<!-- SVG Pulse Sensor Indicator -->
+<div class="relative flex items-center justify-center">
+<svg class="w-10 h-10 text-secondary" fill="none" viewbox="0 0 40 40">
+<circle cx="20" cy="20" r="16" stroke="currentColor" stroke-opacity="0.2" stroke-width="3"></circle>
+<circle cx="20" cy="20" r="16" stroke="currentColor" stroke-dasharray="100" stroke-dashoffset="25" stroke-linecap="round" stroke-width="3"></circle>
+<circle cx="20" cy="20" fill="currentColor" r="4"></circle>
+</svg>
+</div>
+<!-- Metric Details -->
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface">Storage Index Status:</span>
+<span class="font-label-lg text-label-lg text-secondary">Up to date</span>
+<span class="text-outline font-body-sm text-body-sm">(Scanned 14 mins ago)</span>
+</div>
+<div class="flex items-center gap-space-md mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">video_library</span>
+<strong class="text-on-surface">142</strong> Videos (1.4 TB)
+            </span>
+<span class="text-outline">•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">library_music</span>
+<strong class="text-on-surface">864</strong> Audio Tracks (38 GB)
+            </span>
+<span class="text-outline">•</span>
+<span class="flex items-center gap-1 text-outline">
+<span class="material-symbols-outlined text-[16px]">hard_drive</span>
+              NTFS / exFAT Mounts Healthy
+            </span>
+</div>
+</div>
+</div>
+<!-- Quick Action Trigger -->
+<button class="bg-surface-container-high hover:bg-secondary hover:text-on-secondary text-on-surface px-space-md py-space-xs rounded-lg font-label-lg text-label-lg flex items-center gap-space-xs transition-all outline-none" type="button">
+<span class="material-symbols-outlined text-[20px]">sync</span>
+<span>Rescan Drives</span>
+</button>
+</div>
+</section>
+</div></main></div><div class="fixed bottom-space-md right-margin z-50 pointer-events-none"><div class="bg-surface-container-highest/90 backdrop-blur-md px-space-md py-space-xs rounded-full flex items-center gap-space-sm shadow-[0_12px_32px_rgba(11,17,32,0.8)]"><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">DPAD:</span> Navigate</span><span class="text-outline font-label-sm text-label-sm">•</span><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">OK:</span> Select</span><span class="text-outline font-label-sm text-label-sm">•</span><span class="font-label-sm text-label-sm text-on-surface flex items-center gap-1"><span class="text-secondary font-bold">BACK:</span> Exit</span></div></div></body></html>

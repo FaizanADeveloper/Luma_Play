@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LumaPlay TV - Setup &amp; Permissions</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-container": "#00a6e0",
+            "on-background": "#dde2f8",
+            "surface-container-lowest": "#080e1d",
+            "on-secondary-fixed": "#001e2c",
+            "tertiary-fixed": "#e9ddff",
+            "primary-fixed-dim": "#adc6ff",
+            "inverse-primary": "#005ac1",
+            "inverse-on-surface": "#2a3040",
+            "on-primary-fixed": "#001a41",
+            "on-primary-container": "#00285c",
+            "background": "#0d1322",
+            "on-primary-fixed-variant": "#004494",
+            "on-primary": "#002e69",
+            "tertiary-fixed-dim": "#d0bcff",
+            "on-error": "#690005",
+            "on-secondary-container": "#00374d",
+            "secondary-fixed-dim": "#7bd0ff",
+            "surface": "#0d1322",
+            "primary-container": "#4d8efe",
+            "on-surface": "#dde2f8",
+            "surface-container-highest": "#2f3445",
+            "surface-tint": "#adc6ff",
+            "inverse-surface": "#dde2f8",
+            "secondary-fixed": "#c4e7ff",
+            "error": "#ffb4ab",
+            "on-secondary": "#00354a",
+            "outline": "#8c909f",
+            "primary": "#adc6ff",
+            "surface-container-high": "#242a3a",
+            "on-tertiary-fixed": "#23005c",
+            "outline-variant": "#424753",
+            "surface-container-low": "#151b2b",
+            "secondary": "#7bd0ff",
+            "on-tertiary": "#3c0091",
+            "primary-fixed": "#d8e2ff",
+            "error-container": "#93000a",
+            "on-tertiary-container": "#340080",
+            "on-surface-variant": "#c2c6d5",
+            "on-error-container": "#ffdad6",
+            "tertiary-container": "#a078ff",
+            "on-tertiary-fixed-variant": "#5516be",
+            "on-secondary-fixed-variant": "#004c69",
+            "tertiary": "#d0bcff",
+            "surface-bright": "#33394a",
+            "surface-dim": "#0d1322",
+            "surface-variant": "#2f3445",
+            "surface-container": "#191f2f"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "sans": ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .tv-focus-glow {
+      box-shadow: 0 0 35px 2px rgba(123, 208, 255, 0.45), 0 0 10px rgba(77, 142, 254, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-[#0b1120] text-on-surface w-screen h-screen overflow-hidden select-none font-sans relative flex flex-col justify-between items-center p-10">
+<!-- Atmospheric TV 10-foot Ambient Backdrop Glow -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden">
+<div class="absolute -top-40 -left-32 w-[680px] h-[680px] bg-tertiary/15 rounded-full blur-[140px]"></div>
+<div class="absolute top-1/2 -right-48 w-[720px] h-[720px] bg-secondary/15 rounded-full blur-[160px]"></div>
+<div class="absolute -bottom-40 left-1/3 w-[640px] h-[640px] bg-primary/10 rounded-full blur-[150px]"></div>
+</div>
+<!-- Top Minimal Focused Header for 10-Foot Leanback UI -->
+<header class="relative z-10 w-full max-w-6xl flex items-center justify-between px-6 pt-2">
+<div class="flex items-center gap-4">
+<!-- LumaPlay Ribbon Brand Icon -->
+<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-container to-secondary flex items-center justify-center shadow-lg shadow-primary-container/20">
+<svg class="w-6 h-6 text-on-primary-container" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor" fill-rule="evenodd"></path>
+<path clip-rule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+          LumaPlay TV
+          <span class="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-surface-container-high text-secondary border border-outline-variant/40">Android TV</span>
+</h1>
+<p class="text-xs uppercase tracking-widest font-medium text-on-surface-variant/80">MEDIA FOR A BIGGER SCREEN</p>
+</div>
+</div>
+<!-- Stepper Indicator -->
+<div class="flex items-center gap-2 bg-surface-container-lowest/80 border border-outline-variant/50 px-4 py-2 rounded-full backdrop-blur-md">
+<div class="flex items-center gap-1.5 text-xs font-semibold text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>1. Welcome</span>
+</div>
+<span class="text-outline-variant">›</span>
+<div class="flex items-center gap-1.5 text-xs font-bold text-white bg-primary-container/20 border border-primary-container/50 px-2.5 py-1 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+<span>2. Permissions</span>
+</div>
+<span class="text-outline-variant">›</span>
+<div class="flex items-center gap-1.5 text-xs font-medium text-outline">
+<span>3. Library Scan</span>
+</div>
+</div>
+</header>
+<!-- Centered TV Hero Modal Card (1080p optimized 10-foot experience) -->
+<main class="relative z-10 w-full max-w-5xl my-auto">
+<div class="bg-surface-container-low/95 border border-outline-variant/40 rounded-2xl shadow-2xl backdrop-blur-xl p-8 lg:p-10 flex flex-col gap-6">
+<!-- Header & Instructions -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-secondary">
+<span class="material-symbols-outlined text-base">security_update_good</span>
+          Step 2 of 3 • Storage Access &amp; Media Discovery
+        </div>
+<h2 class="text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+          Grant Storage Permission for Offline Media
+        </h2>
+<p class="text-base text-on-surface-variant leading-relaxed max-w-4xl pt-1">
+          LumaPlay requires access to read videos and music stored on your Android TV's internal storage and connected USB flash drives or external HDDs. No data ever leaves your local network.
+        </p>
+</div>
+<!-- Android TV System API Permissions Badges & Storage Scan Preview -->
+<div class="grid grid-cols-12 gap-5">
+<!-- Permissions Pill Panel -->
+<div class="col-span-12 md:col-span-5 flex flex-col gap-3 bg-surface-container/70 border border-outline-variant/30 rounded-xl p-4">
+<span class="text-xs font-semibold text-outline uppercase tracking-wider">Required Android Manifest APIs</span>
+<div class="flex items-center gap-3 bg-surface-container-high/60 rounded-lg p-2.5 border border-outline-variant/20">
+<div class="w-8 h-8 rounded-md bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">folder_supervised</span>
+</div>
+<div class="truncate">
+<p class="text-xs font-mono font-bold text-white tracking-tight">MANAGE_EXTERNAL_STORAGE</p>
+<p class="text-[11px] text-on-surface-variant">Full drive access for direct MKV/MP4 remuxing</p>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-high/60 rounded-lg p-2.5 border border-outline-variant/20">
+<div class="w-8 h-8 rounded-md bg-primary-container/20 text-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">video_library</span>
+</div>
+<div class="truncate">
+<p class="text-xs font-mono font-bold text-white tracking-tight">READ_MEDIA_VIDEO &amp; AUDIO</p>
+<p class="text-[11px] text-on-surface-variant">Embedded subtitles and Dolby Atmos pass-thru</p>
+</div>
+</div>
+</div>
+<!-- Detected Drives Card -->
+<div class="col-span-12 md:col-span-7 flex flex-col justify-between bg-surface-container/70 border border-outline-variant/30 rounded-xl p-4">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-semibold text-outline uppercase tracking-wider">Detected Storage Drives (2)</span>
+<span class="text-[11px] flex items-center gap-1.5 text-secondary font-semibold">
+<span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+              Auto-mount Active
+            </span>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<!-- Drive 1 -->
+<div class="bg-surface-container-lowest/80 border border-outline-variant/40 rounded-lg p-3 flex flex-col gap-2">
+<div class="flex items-center justify-between text-white">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">hard_drive</span>
+<span class="text-xs font-bold">Internal Storage</span>
+</div>
+<span class="text-[10px] text-outline bg-surface-container-high px-1.5 py-0.5 rounded">eMMC</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 48%"></div>
+</div>
+<p class="text-[11px] text-on-surface-variant flex justify-between">
+<span>15.4 GB Free</span>
+<span class="text-outline">32 GB Total</span>
+</p>
+</div>
+<!-- Drive 2 -->
+<div class="bg-surface-container-lowest/80 border border-secondary/40 rounded-lg p-3 flex flex-col gap-2 relative overflow-hidden">
+<div class="absolute -right-6 -bottom-6 w-16 h-16 bg-secondary/10 rounded-full blur-lg"></div>
+<div class="flex items-center justify-between text-white">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">usb</span>
+<span class="text-xs font-bold truncate max-w-[120px]">SanDisk Extreme</span>
+</div>
+<span class="text-[10px] text-secondary font-bold bg-secondary/15 px-1.5 py-0.5 rounded border border-secondary/30">OTG USB</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 72%"></div>
+</div>
+<p class="text-[11px] text-on-surface-variant flex justify-between">
+<span class="text-white font-medium">720 GB 4K Movies</span>
+<span class="text-outline">1 TB Total</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+<!-- TV Remote D-Pad Action Row -->
+<div class="pt-2 flex flex-col gap-3">
+<span class="text-xs font-semibold text-outline uppercase tracking-wider">Remote Action Controls</span>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Primary Action (FOCUSED STATE - D-Pad Active) -->
+<button class="relative group col-span-1 flex items-center justify-between px-5 py-4 rounded-xl bg-gradient-to-r from-primary-container to-secondary text-on-primary-container font-extrabold text-base border-[3px] border-[#38bdf8] scale-[1.03] tv-focus-glow transition-all duration-200">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="tracking-tight">Allow All Storage Access</span>
+</div>
+<!-- TV Remote OK Badge -->
+<span class="bg-[#002e69] text-white text-[11px] font-bold px-2 py-1 rounded shadow uppercase tracking-wider flex items-center gap-1 border border-white/20">
+<span class="material-symbols-outlined text-xs">radio_button_checked</span>
+              OK
+            </span>
+</button>
+<!-- Secondary Action (Unfocused TV Button) -->
+<button class="col-span-1 flex items-center justify-between px-5 py-4 rounded-xl bg-surface-container border border-outline-variant text-on-surface hover:border-secondary hover:bg-surface-container-high transition-all text-sm font-semibold">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-outline">folder_open</span>
+<span>Select Specific Folders...</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm">arrow_forward_ios</span>
+</button>
+<!-- Tertiary Action (Unfocused TV Button) -->
+<button class="col-span-1 flex items-center justify-between px-5 py-4 rounded-xl bg-surface-container border border-outline-variant text-on-surface hover:border-secondary hover:bg-surface-container-high transition-all text-sm font-semibold">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span>System App Settings</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Trust & Privacy Guarantee Note -->
+<div class="pt-2 border-t border-outline-variant/30 flex items-center justify-between text-xs text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-medium text-white">100% Offline-First Architecture.</span>
+<span>LumaPlay respects your privacy and has zero telemetry, no cloud indexing, or tracking.</span>
+</div>
+<div class="flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-sm">wifi_off</span>
+<span>No Internet Required</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom TV Remote Navigation Bar Hint -->
+<footer class="relative z-10 w-full max-w-5xl flex items-center justify-between text-xs font-semibold text-outline-variant border-t border-outline-variant/20 pt-4 pb-2 px-6">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-white text-[11px] font-mono border border-outline-variant font-bold">▲ ▼ ◄ ►</span>
+<span>Navigate / Select</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-white text-[11px] font-mono border border-outline-variant font-bold">OK / SELECT</span>
+<span>Confirm &amp; Proceed</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-white text-[11px] font-mono border border-outline-variant font-bold">BACK</span>
+<span>Previous / Exit</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-base">tv</span>
+<span>Android TV OS 14 • Leanback Build 3.4.1</span>
+</div>
+</footer>
+</body></html>

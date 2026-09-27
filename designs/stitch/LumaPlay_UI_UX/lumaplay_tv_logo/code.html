@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" fill="none">
+  <defs>
+    <linearGradient id="lumaGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#4285F4" />
+    </linearGradient>
+    <linearGradient id="lumaGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#4285F4" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#38BDF8" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <!-- Ribbon Play Emblem -->
+  <g transform="translate(6, 6)" filter="url(#glow)">
+    <path d="M12 8 C12 5.5 14.5 4 16.8 5.2 L44.2 21.2 C46.4 22.5 46.4 25.5 44.2 26.8 L16.8 42.8 C14.5 44 12 42.5 12 40 Z" fill="url(#lumaGrad1)"/>
+    <path d="M26 15 L44.2 25.6 C45.5 26.4 45.5 27.6 44.2 28.4 L34 34.5 C31 36.3 27 34 27 30 Z" fill="url(#lumaGrad2)" opacity="0.85"/>
+    <circle cx="21" cy="24" r="3.5" fill="#FFFFFF"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="64" y="36" fill="#F8FAFC" font-family="Inter, Roboto, sans-serif" font-size="24" font-weight="800" letter-spacing="0.5">Luma<tspan fill="#38BDF8">Play</tspan></text>
+  <text x="65" y="49" fill="#94A3B8" font-family="Inter, Roboto, sans-serif" font-size="8" font-weight="700" letter-spacing="2.2">MEDIA FOR A BIGGER SCREEN</text>
+</svg>
