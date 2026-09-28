@@ -18,8 +18,8 @@ data class LumaShapes(
     /** 8dp corner radius for buttons, chips, and format badges. */
     val medium: Shape = RoundedCornerShape(8.dp),
 
-    /** 16dp corner radius for 16:9 media cards, hero tiles, and browse items. */
-    val large: Shape = RoundedCornerShape(16.dp),
+    /** 12dp corner radius for 16:9 media cards, hero tiles, and browse items (Stitch rounded-xl). */
+    val large: Shape = RoundedCornerShape(12.dp),
 
     /** 24dp corner radius for modal dialogs, OSD sheets, and diagnostic panels. */
     val extraLarge: Shape = RoundedCornerShape(24.dp),

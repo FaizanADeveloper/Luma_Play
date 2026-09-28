@@ -10,25 +10,27 @@ import androidx.tv.material3.darkColorScheme
 // --- Core Palette Tokens (Google Stitch LumaPlay Design System) ---
 
 // Canvas & Surfaces (Tonal Stepping)
-val LumaBackground = Color(0xFF0B1120)            // Level 0: Deep navy charcoal grounding canvas
-val LumaSurface = Color(0xFF111C30)               // Level 1: Dark slate blue (dock, trays, modals)
-val LumaSurfaceCard = Color(0xFF192840)           // Level 2: Base resting state for media cards & inputs
-val LumaSurfaceContainerHigh = Color(0xFF1E314F)  // Level 3: Active selected rows, elevated dialogs
+val LumaBackground = Color(0xFF0D1322)            // Level 0: Deep obsidian charcoal grounding canvas (#0D1322)
+val LumaSurface = Color(0xFF0D1322)               // Stitch surface (#0D1322)
+val LumaSurfaceContainerLow = Color(0xFF151B2B)   // Level 1: Container low for storage telemetry & footer (#151B2B)
+val LumaSurfaceCard = Color(0xFF191F2F)           // Level 2: Base resting state for media cards & inputs (#191F2F)
+val LumaSurfaceContainerHigh = Color(0xFF242A3A)  // Level 3: Active selected rows, elevated dialogs (#242A3A)
 val LumaSurfaceContainerLowest = Color(0xFF080E1D)// Deep inset background (telemetry wells)
 val LumaSurfaceContainerHighest = Color(0xFF2F3445) // Inactive track trough
 
 // Brand & Accent Colors
-val LumaPrimary = Color(0xFF4285F4)               // Royal Blue action color (timelines, primary CTA)
-val LumaCyan = Color(0xFF38BDF8)                  // Electric Cyan focus border & highlight
+val LumaPrimary = Color(0xFF4285F4)               // Royal Blue action color
+val LumaCyan = Color(0xFF7BD0FF)                  // Vibrant Stitch Cyan accent (#7BD0FF)
+val LumaOnSecondary = Color(0xFF00354A)           // Dark navy text on cyan (#00354A)
 val LumaViolet = Color(0xFF8B5CF6)                // Deep Violet for featured tags & highlights
-val LumaCyanGlow = Color(0x7338BDF8)              // 45% alpha Cyan for luminous TV focus halo
+val LumaCyanGlow = Color(0x997BD0FF)              // 60% alpha Cyan for luminous TV focus halo (rgba(123,208,255,0.6))
 
 // Typography & Content Colors
-val LumaTextPrimary = Color(0xFFF8FAFC)           // Crisp slate-white for headings & active labels
-val LumaTextSecondary = Color(0xFF94A3B8)         // Cool slate blue-gray for metadata & descriptions
-val LumaTextMuted = Color(0xFF64748B)             // Low-emphasis copy & inactive categories
-val LumaOutline = Color(0xFF8C909F)               // Inactive borders & dividing rules
-val LumaOutlineVariant = Color(0xFF424753)        // Subtle card borders in resting state
+val LumaTextPrimary = Color(0xFFDDE2F8)           // Stitch on-surface (#DDE2F8)
+val LumaTextSecondary = Color(0xFFC2C6D5)         // Stitch on-surface-variant (#C2C6D5)
+val LumaTextMuted = Color(0xFF8C909F)             // Low-emphasis copy & inactive categories (#8C909F)
+val LumaOutline = Color(0xFF8C909F)               // Inactive borders & dividing rules (#8C909F)
+val LumaOutlineVariant = Color(0xFF424753)        // Subtle card borders in resting state (#424753)
 
 // Status & Badge Accents
 val LumaSuccess = Color(0xFF10B981)               // Emerald for completed progress
@@ -44,12 +46,14 @@ val LumaErrorContainer = Color(0xFF93000A)        // Dark error container fill
 data class LumaColors(
     val background: Color = LumaBackground,
     val surface: Color = LumaSurface,
+    val surfaceContainerLow: Color = LumaSurfaceContainerLow,
     val surfaceCard: Color = LumaSurfaceCard,
     val surfaceContainerHigh: Color = LumaSurfaceContainerHigh,
     val surfaceContainerLowest: Color = LumaSurfaceContainerLowest,
     val surfaceContainerHighest: Color = LumaSurfaceContainerHighest,
     val primary: Color = LumaPrimary,
     val cyan: Color = LumaCyan,
+    val onSecondary: Color = LumaOnSecondary,
     val violet: Color = LumaViolet,
     val cyanGlow: Color = LumaCyanGlow,
     val textPrimary: Color = LumaTextPrimary,
@@ -76,7 +80,7 @@ fun lumaDarkColorScheme(colors: LumaColors = LumaColors()): ColorScheme = darkCo
     primaryContainer = Color(0xFF4D8EFE),
     onPrimaryContainer = Color(0xFF00285C),
     secondary = colors.cyan,
-    onSecondary = Color(0xFF00354A),
+    onSecondary = colors.onSecondary,
     secondaryContainer = Color(0xFF00A6E0),
     onSecondaryContainer = Color(0xFF00374D),
     tertiary = colors.violet,

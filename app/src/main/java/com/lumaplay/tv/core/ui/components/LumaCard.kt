@@ -27,7 +27,7 @@ import com.lumaplay.tv.core.theme.LumaTheme
  * LumaPlay TV Media Card Foundation.
  *
  * Implements Google Stitch TV design specifications for interactive media tiles:
- * - 16dp rounded corners ([LumaTheme.shapes.large]) by default.
+ * - 12dp rounded corners ([LumaTheme.shapes.large], Stitch rounded-xl) by default.
  * - Level 2 surface resting container ([LumaTheme.colors.surfaceCard]).
  * - Focused 1.04x scale enlargement for 10-foot television clarity.
  * - Solid 3dp Electric Cyan ([LumaTheme.colors.cyan]) focused border.

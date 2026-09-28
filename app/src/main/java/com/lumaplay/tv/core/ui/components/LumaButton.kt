@@ -73,13 +73,13 @@ fun LumaButton(
 ) {
     val buttonColors: ButtonColors = when (variant) {
         LumaButtonVariant.Primary -> ButtonDefaults.colors(
-            containerColor = LumaTheme.colors.primary,
+            containerColor = LumaTheme.colors.surfaceContainerHigh,
             contentColor = LumaTheme.colors.textPrimary,
-            focusedContainerColor = LumaTheme.colors.primary,
-            focusedContentColor = LumaTheme.colors.textPrimary,
-            pressedContainerColor = LumaTheme.colors.primary,
-            pressedContentColor = LumaTheme.colors.textPrimary,
-            disabledContainerColor = LumaTheme.colors.primary.copy(alpha = 0.38f),
+            focusedContainerColor = LumaTheme.colors.cyan,
+            focusedContentColor = LumaTheme.colors.onSecondary,
+            pressedContainerColor = LumaTheme.colors.cyan.copy(alpha = 0.85f),
+            pressedContentColor = LumaTheme.colors.onSecondary,
+            disabledContainerColor = LumaTheme.colors.surfaceContainerHigh.copy(alpha = 0.38f),
             disabledContentColor = LumaTheme.colors.textMuted
         )
         LumaButtonVariant.Secondary -> ButtonDefaults.colors(
@@ -126,11 +126,16 @@ fun LumaButton(
     }
 
     val buttonGlow: ButtonGlow = when (variant) {
-        LumaButtonVariant.Primary,
+        LumaButtonVariant.Primary -> ButtonDefaults.glow(
+            focusedGlow = Glow(
+                elevationColor = LumaTheme.colors.cyanGlow,
+                elevation = 16.dp
+            )
+        )
         LumaButtonVariant.Secondary -> ButtonDefaults.glow(
             focusedGlow = Glow(
                 elevationColor = LumaTheme.colors.cyanGlow,
-                elevation = 20.dp
+                elevation = 12.dp
             )
         )
         LumaButtonVariant.Ghost -> ButtonDefaults.glow(
@@ -141,10 +146,7 @@ fun LumaButton(
     val buttonBorder: ButtonBorder = when (variant) {
         LumaButtonVariant.Primary -> ButtonDefaults.border(
             border = Border.None,
-            focusedBorder = Border(
-                border = BorderStroke(width = 3.dp, color = LumaTheme.colors.cyan),
-                shape = shape
-            ),
+            focusedBorder = Border.None,
             disabledBorder = Border.None
         )
         LumaButtonVariant.Secondary -> ButtonDefaults.border(

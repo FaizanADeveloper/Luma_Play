@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="52"
+    android:viewportHeight="52">
+    <!-- Outer Play Ribbon -->
+    <path
+        android:fillColor="#FF38BDF8"
+        android:pathData="M12,8 C12,5.5 14.5,4 16.8,5.2 L44.2,21.2 C46.4,22.5 46.4,25.5 44.2,26.8 L16.8,42.8 C14.5,44 12,42.5 12,40 Z" />
+    <!-- Inner Ribbon Fold -->
+    <path
+        android:fillColor="#FF8B5CF6"
+        android:fillAlpha="0.85"
+        android:pathData="M26,15 L44.2,25.6 C45.5,26.4 45.5,27.6 44.2,28.4 L34,34.5 C31,36.3 27,34 27,30 Z" />
+    <!-- Core White Dot -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M21,20.5 A3.5,3.5 0 1,0 21,27.5 A3.5,3.5 0 1,0 21,20.5 Z" />
+</vector>

@@ -14,21 +14,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
+import com.lumaplay.tv.R
 import com.lumaplay.tv.core.theme.LumaTheme
 import com.lumaplay.tv.core.ui.components.LumaBadge
 import com.lumaplay.tv.core.ui.components.LumaBadgeVariant
@@ -36,13 +40,14 @@ import com.lumaplay.tv.core.ui.components.LumaCard
 import com.lumaplay.tv.data.model.VideoItem
 
 /**
- * Reusable Horizontal TV Media Swimlane (Carousel).
+ * Horizontal TV Media Swimlane (Carousel) for Recently Added Videos.
  *
  * Implements Stitch home_dashboard swimlane specifications:
- * - 16:9 media cards with 16dp rounded corners ([LumaTheme.shapes.large]).
+ * - 16:9 media cards (280dp x 158dp) with 16dp rounded corners ([LumaTheme.shapes.large]).
  * - Focused 1.04x scale with 3dp Electric Cyan border and 20dp glow halo.
- * - Real asynchronous thumbnail loading with Coil.
- * - Dynamic resolution badge, duration badge, and optional progress track.
+ * - Real asynchronous thumbnail loading with Coil without obscuring watermark icons.
+ * - Top-left "NEW" badge, top-right resolution badge, bottom-right duration badge.
+ * - Metadata row with file size pill, bullet, and container format tag.
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -52,23 +57,43 @@ fun MediaCarouselRow(
     onVideoClick: (VideoItem) -> Unit,
     modifier: Modifier = Modifier,
     badgeText: String? = null,
+    iconResId: Int? = R.drawable.ic_action_new_releases,
     showProgress: Boolean = false,
-    sidebarHomeFocusRequester: FocusRequester? = null
+    sidebarHomeFocusRequester: FocusRequester? = null,
+    heroFocusRequester: FocusRequester? = null,
+    downFocusRequester: FocusRequester? = null,
+    contentPadding: PaddingValues = PaddingValues(start = 40.dp, end = 56.dp, top = 24.dp, bottom = 24.dp),
+    headerPadding: PaddingValues = PaddingValues(horizontal = 40.dp)
 ) {
     if (videos.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Section Header
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(headerPadding),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = title,
-                style = LumaTheme.typography.headlineSm,
-                color = LumaTheme.colors.textPrimary
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (iconResId != null) {
+                    Icon(
+                        painter = painterResource(id = iconResId),
+                        contentDescription = null,
+                        tint = LumaTheme.colors.cyan,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Text(
+                    text = title,
+                    style = LumaTheme.typography.headlineSm,
+                    color = LumaTheme.colors.textPrimary
+                )
+            }
 
             badgeText?.let { badge ->
                 LumaBadge(
@@ -78,24 +103,30 @@ fun MediaCarouselRow(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Horizontal Carousel
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
-            contentPadding = PaddingValues(end = 48.dp)
+            contentPadding = contentPadding
         ) {
             itemsIndexed(videos, key = { _, video -> video.id }) { index, video ->
-                val cardModifier = if (index == 0 && sidebarHomeFocusRequester != null) {
-                    Modifier
-                        .width(280.dp)
-                        .focusProperties {
-                            left = sidebarHomeFocusRequester
+                val cardModifier = Modifier
+                    .width(280.dp)
+                    .focusProperties {
+                        if (index == 0) {
+                            if (sidebarHomeFocusRequester != null) {
+                                left = sidebarHomeFocusRequester
+                            }
+                            if (downFocusRequester != null) {
+                                down = downFocusRequester
+                            }
                         }
-                } else {
-                    Modifier.width(280.dp)
-                }
+                        if (heroFocusRequester != null) {
+                            up = heroFocusRequester
+                        }
+                    }
 
                 LumaCard(
                     onClick = { onVideoClick(video) },
@@ -106,7 +137,7 @@ fun MediaCarouselRow(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(158.dp)
-                            .background(LumaTheme.colors.surfaceContainerHigh)
+                            .background(LumaTheme.colors.surfaceContainerLowest)
                     ) {
                         // Async Artwork / Thumbnail
                         AsyncImage(
@@ -116,19 +147,35 @@ fun MediaCarouselRow(
                             modifier = Modifier.fillMaxSize()
                         )
 
-                        // Fallback play watermark icon
+                        // Subtle bottom gradient overlay for legibility
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
-                                .clip(LumaTheme.shapes.circle)
-                                .background(Color.Black.copy(alpha = 0.5f))
-                                .align(Alignment.Center),
-                            contentAlignment = Alignment.Center
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color(0x99080E1D)
+                                        )
+                                    )
+                                )
+                        )
+
+                        // Top-Start "NEW" Badge
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(8.dp)
+                                .background(
+                                    color = LumaTheme.colors.surfaceContainerHigh.copy(alpha = 0.9f),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = "▶",
-                                style = LumaTheme.typography.labelLg,
-                                color = LumaTheme.colors.cyan
+                                text = "NEW",
+                                style = LumaTheme.typography.labelSm,
+                                color = LumaTheme.colors.textPrimary
                             )
                         }
 
@@ -137,10 +184,16 @@ fun MediaCarouselRow(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(8.dp)
+                                .background(
+                                    color = LumaTheme.colors.surfaceContainerLowest.copy(alpha = 0.85f),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
-                            LumaBadge(
+                            Text(
                                 text = video.resolutionTag,
-                                variant = if (video.resolutionTag == "4K") LumaBadgeVariant.Highlight else LumaBadgeVariant.Standard
+                                style = LumaTheme.typography.labelSm,
+                                color = LumaTheme.colors.cyan
                             )
                         }
 
@@ -149,14 +202,20 @@ fun MediaCarouselRow(
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                                 .padding(8.dp)
+                                .background(
+                                    color = LumaTheme.colors.surfaceContainerLowest.copy(alpha = 0.85f),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
-                            LumaBadge(
+                            Text(
                                 text = video.formattedDuration,
-                                variant = LumaBadgeVariant.Standard
+                                style = LumaTheme.typography.labelSm,
+                                color = LumaTheme.colors.textPrimary
                             )
                         }
 
-                        // Optional Progress Bar
+                        // Optional Progress Bar (for future Continue Watching milestone)
                         if (showProgress) {
                             Box(
                                 modifier = Modifier
@@ -169,7 +228,7 @@ fun MediaCarouselRow(
                                     modifier = Modifier
                                         .fillMaxWidth(0.35f)
                                         .fillMaxHeight()
-                                        .background(LumaTheme.colors.primary)
+                                        .background(LumaTheme.colors.cyan)
                                 )
                             }
                         }
@@ -179,21 +238,55 @@ fun MediaCarouselRow(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp)
+                            .padding(horizontal = 14.dp, vertical = 12.dp)
                     ) {
                         Text(
-                            text = video.title,
+                            text = video.cleanTitle,
                             style = LumaTheme.typography.labelLg,
                             color = LumaTheme.colors.textPrimary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "${video.resolutionTag} • Local File",
-                            style = LumaTheme.typography.bodySm,
-                            color = LumaTheme.colors.textSecondary
-                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            // File size pill
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        color = LumaTheme.colors.surfaceContainerHigh,
+                                        shape = RoundedCornerShape(4.dp)
+                                    )
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = video.formattedFileSize,
+                                    style = LumaTheme.typography.labelSm,
+                                    color = LumaTheme.colors.cyan
+                                )
+                            }
+
+                            Text(
+                                text = "•",
+                                style = LumaTheme.typography.labelSm,
+                                color = LumaTheme.colors.outline
+                            )
+
+                            // Format / Container info
+                            val formatInfo = buildString {
+                                video.containerTag?.let { append("$it ") }
+                                append(video.resolutionTag)
+                            }
+                            Text(
+                                text = formatInfo.uppercase(),
+                                style = LumaTheme.typography.labelSm,
+                                color = LumaTheme.colors.textSecondary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
             }

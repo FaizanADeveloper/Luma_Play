@@ -7,31 +7,33 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.lumaplay.tv.R
 import com.lumaplay.tv.core.theme.LumaTheme
-import com.lumaplay.tv.core.ui.components.LumaBadge
-import com.lumaplay.tv.core.ui.components.LumaBadgeVariant
 
 /**
  * Top Status Bar for Android TV.
  *
- * Implements real dynamic indicators:
+ * Implements Google Stitch home_dashboard header specifications:
+ * - 64dp height and 56dp TV-safe margin horizontal content padding.
  * - Real display mode detection based on screen density & width (1080p Cinema Mode / 4K UHD).
- * - Real network transport query via [ConnectivityManager] (Ethernet LAN / Wi-Fi / Offline).
- * - Adheres strictly to the Stitch home_dashboard header layout.
+ * - Real network transport query via [ConnectivityManager] (Ethernet LAN / Wi-Fi / Offline) with vector icon.
+ * - 32dp user profile avatar circle with vector person symbol.
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -65,9 +67,9 @@ fun TvTopBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(64.dp)
             .background(LumaTheme.colors.surfaceContainerLowest.copy(alpha = 0.85f))
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = LumaTheme.spacing.tvSafeMargin)
     ) {
         Row(
             modifier = Modifier
@@ -76,24 +78,58 @@ fun TvTopBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Mode Tag
-            LumaBadge(
-                text = displayMode,
-                variant = LumaBadgeVariant.Highlight
-            )
-
-            // System Indicators
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // 1. Display Mode Badge (Stitch: bg-surface-container-high, text-secondary)
+            Box(
+                modifier = Modifier
+                    .clip(LumaTheme.shapes.small)
+                    .background(LumaTheme.colors.surfaceContainerHigh)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
                 Text(
-                    text = networkStatus,
+                    text = displayMode,
                     style = LumaTheme.typography.labelSm,
-                    color = LumaTheme.colors.textSecondary
+                    color = LumaTheme.colors.cyan
                 )
-                Spacer(modifier = Modifier.width(16.dp))
-                LumaBadge(
-                    text = "Offline Mode",
-                    variant = LumaBadgeVariant.Standard
-                )
+            }
+
+            // 2. System Status Indicators & Avatar
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                // Network indicator with vector icon
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_status_wifi),
+                        contentDescription = "Network Status",
+                        modifier = Modifier.size(16.dp),
+                        tint = LumaTheme.colors.textSecondary
+                    )
+                    Text(
+                        text = networkStatus,
+                        style = LumaTheme.typography.labelSm,
+                        color = LumaTheme.colors.textSecondary
+                    )
+                }
+
+                // Profile Avatar (Stitch: w-8 h-8 rounded-full bg-primary)
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(LumaTheme.shapes.circle)
+                        .background(LumaTheme.colors.cyan),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_status_person),
+                        contentDescription = "User Profile",
+                        modifier = Modifier.size(18.dp),
+                        tint = LumaTheme.colors.onSecondary
+                    )
+                }
             }
         }
     }

@@ -28,7 +28,9 @@ class MediaStoreVideoRepository(
                 MediaStore.Video.Media.WIDTH,
                 MediaStore.Video.Media.HEIGHT,
                 MediaStore.Video.Media.SIZE,
-                MediaStore.Video.Media.DATE_ADDED
+                MediaStore.Video.Media.DATE_ADDED,
+                MediaStore.Video.Media.BUCKET_DISPLAY_NAME,
+                MediaStore.Video.Media.MIME_TYPE
             )
 
             // Filter out 0-byte files
@@ -49,6 +51,8 @@ class MediaStoreVideoRepository(
                 val heightColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)
                 val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
                 val dateAddedColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_ADDED)
+                val bucketColumn = cursor.getColumnIndex(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
+                val mimeColumn = cursor.getColumnIndex(MediaStore.Video.Media.MIME_TYPE)
 
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(idColumn)
@@ -58,6 +62,14 @@ class MediaStoreVideoRepository(
                     val height = cursor.getInt(heightColumn)
                     val size = cursor.getLong(sizeColumn)
                     val dateAdded = cursor.getLong(dateAddedColumn)
+                    val bucketName = if (bucketColumn != -1) cursor.getString(bucketColumn) else null
+                    val mimeType = if (mimeColumn != -1) cursor.getString(mimeColumn) else null
+
+                    val folderName = if (!bucketName.isNullOrBlank()) {
+                        "Internal Storage / $bucketName"
+                    } else {
+                        "Internal Storage / Videos"
+                    }
 
                     val contentUri = ContentUris.withAppendedId(
                         MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
@@ -73,7 +85,9 @@ class MediaStoreVideoRepository(
                             width = width,
                             height = height,
                             sizeBytes = size,
-                            dateAdded = dateAdded
+                            dateAdded = dateAdded,
+                            folderName = folderName,
+                            mimeType = mimeType
                         )
                     )
                 }

@@ -5,32 +5,52 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.focusGroup
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.lumaplay.tv.R
 import com.lumaplay.tv.core.theme.LumaTheme
+import com.lumaplay.tv.core.ui.components.LumaBadge
+import com.lumaplay.tv.core.ui.components.LumaBadgeVariant
 import com.lumaplay.tv.core.ui.components.LumaButton
 import com.lumaplay.tv.core.ui.components.LumaButtonVariant
 import com.lumaplay.tv.core.ui.components.LumaCard
 import com.lumaplay.tv.data.model.VideoItem
 import com.lumaplay.tv.ui.home.components.HeroBillboard
 import com.lumaplay.tv.ui.home.components.MediaCarouselRow
+import com.lumaplay.tv.ui.home.components.MediaDetailsDialog
 
 /**
  * Full Cinematic TV Home Dashboard.
@@ -53,6 +73,8 @@ fun HomeScreen(
     playButtonFocusRequester: FocusRequester? = null,
     sidebarHomeFocusRequester: FocusRequester? = null
 ) {
+    var detailsVideo by remember { mutableStateOf<VideoItem?>(null) }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -209,107 +231,266 @@ fun HomeScreen(
 
             is HomeUiState.Success -> {
                 val scrollState = rememberScrollState()
+                val coroutineScope = rememberCoroutineScope()
+                val firstFolderFocusRequester = remember { FocusRequester() }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(horizontal = 40.dp, vertical = 20.dp)
-                ) {
-                    // --- 1. Hero Showcase Billboard ---
-                    val featuredVideo = uiState.videos.firstOrNull()
-                    HeroBillboard(
-                        featuredVideo = featuredVideo,
-                        onPlay = onVideoClick,
-                        onDetails = { /* Details hook */ },
-                        onRescan = onScanClick,
-                        playButtonFocusRequester = playButtonFocusRequester,
-                        sidebarHomeFocusRequester = sidebarHomeFocusRequester
-                    )
+                val density = LocalDensity.current
+                val topSafeMargin = with(density) { 16.dp.toPx() }
+                val bottomSafeMargin = with(density) { 48.dp.toPx() }
+                val heroThresholdPx = with(density) { 450.dp.toPx() }
 
-                    Spacer(modifier = Modifier.height(36.dp))
-
-                    // --- 2. Recent Videos Swimlane ---
-                    MediaCarouselRow(
-                        title = "Recent Videos",
-                        badgeText = "${uiState.videos.size} Videos",
-                        videos = uiState.videos,
-                        onVideoClick = onVideoClick,
-                        sidebarHomeFocusRequester = sidebarHomeFocusRequester
-                    )
-
-                    Spacer(modifier = Modifier.height(36.dp))
-
-                    // --- 3. Quick Storage Folders Swimlane ---
-                    Text(
-                        text = "Storage Folders",
-                        style = LumaTheme.typography.headlineSm,
-                        color = LumaTheme.colors.textPrimary
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    val folders = listOf(
-                        Triple("Movies", "Internal Storage / Movies", "📁"),
-                        Triple("Download", "Internal Storage / Download", "📥"),
-                        Triple("DCIM", "Internal Storage / DCIM", "📷"),
-                        Triple("USB Drive", "Removable Media", "💾")
-                    )
-
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusProperties {
-                                down = FocusRequester.Cancel
-                            },
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                        contentPadding = PaddingValues(end = 48.dp)
-                    ) {
-                        itemsIndexed(folders) { index, (name, subtitle, icon) ->
-                            val cardModifier = if (index == 0 && sidebarHomeFocusRequester != null) {
-                                Modifier
-                                    .width(220.dp)
-                                    .focusProperties {
-                                        left = sidebarHomeFocusRequester
-                                    }
-                            } else {
-                                Modifier.width(220.dp)
+                @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+                val tvBringIntoViewSpec = remember(topSafeMargin, bottomSafeMargin, heroThresholdPx, scrollState) {
+                    object : androidx.compose.foundation.gestures.BringIntoViewSpec {
+                        override fun calculateScrollDistance(
+                            offset: Float,
+                            size: Float,
+                            containerSize: Float
+                        ): Float {
+                            // If the item requesting bring-into-view is within the Hero Showcase (y < 450dp),
+                            // always restore the entire hero billboard by scrolling back to 0!
+                            val absoluteY = scrollState.value + offset
+                            if (absoluteY < heroThresholdPx) {
+                                return if (scrollState.value > 0) -scrollState.value.toFloat() else 0f
                             }
 
-                            LumaCard(
-                                onClick = { /* Will open Folder Browser in Batch 2 */ },
-                                modifier = cardModifier
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = icon,
-                                        style = LumaTheme.typography.headlineLg,
-                                        color = LumaTheme.colors.cyan
-                                    )
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Text(
-                                        text = name,
-                                        style = LumaTheme.typography.headlineSm,
-                                        color = LumaTheme.colors.textPrimary
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = subtitle,
-                                        style = LumaTheme.typography.bodySm,
-                                        color = LumaTheme.colors.textSecondary
-                                    )
-                                }
+                            val targetTop = topSafeMargin
+                            val targetBottom = containerSize - bottomSafeMargin
+                            if (offset >= targetTop && offset + size <= targetBottom) {
+                                return 0f
+                            }
+                            return if (offset < targetTop) {
+                                offset - targetTop
+                            } else {
+                                offset + size - targetBottom
                             }
                         }
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(48.dp))
+                @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.foundation.gestures.LocalBringIntoViewSpec provides tvBringIntoViewSpec
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                            .padding(vertical = 8.dp)
+                    ) {
+                        // --- 1. Hero Showcase Billboard ---
+                        val featuredVideo = uiState.videos.firstOrNull()
+                        HeroBillboard(
+                            featuredVideo = featuredVideo,
+                            onPlay = onVideoClick,
+                            onDetails = { video -> detailsVideo = video },
+                            onRescan = onScanClick,
+                            playButtonFocusRequester = playButtonFocusRequester,
+                            sidebarHomeFocusRequester = sidebarHomeFocusRequester,
+                            onFocusGained = {
+                                if (scrollState.value > 0) {
+                                    coroutineScope.launch {
+                                        scrollState.animateScrollTo(0)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.padding(horizontal = 40.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // --- 2. Recently Added Videos Swimlane ---
+                        MediaCarouselRow(
+                            title = "Recently Added Videos",
+                            badgeText = "${uiState.videos.size} Videos",
+                            videos = uiState.videos,
+                            onVideoClick = onVideoClick,
+                            sidebarHomeFocusRequester = sidebarHomeFocusRequester,
+                            heroFocusRequester = playButtonFocusRequester,
+                            downFocusRequester = firstFolderFocusRequester,
+                            contentPadding = PaddingValues(start = 40.dp, end = 56.dp, top = 24.dp, bottom = 24.dp),
+                            headerPadding = PaddingValues(horizontal = 40.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // --- 3. Storage Folders Swimlane ---
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 40.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_nav_folders),
+                                    contentDescription = null,
+                                    tint = LumaTheme.colors.cyan,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Text(
+                                    text = "Storage Folders",
+                                    style = LumaTheme.typography.headlineSm,
+                                    color = LumaTheme.colors.textPrimary
+                                )
+                            }
+
+                            LumaBadge(
+                                text = "Internal Storage",
+                                variant = LumaBadgeVariant.Standard
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        val moviesCount = uiState.videos.count { it.folderName.contains("Movies", ignoreCase = true) }
+                        val downloadCount = uiState.videos.count { it.folderName.contains("Download", ignoreCase = true) }
+                        val dcimCount = uiState.videos.count { it.folderName.contains("DCIM", ignoreCase = true) }
+
+                        val discoverableFolders = listOf(
+                            StorageFolderItem(
+                                name = "Movies",
+                                path = "Internal Storage / Movies",
+                                iconResId = R.drawable.ic_folder_movie,
+                                badgeText = if (moviesCount == 1) "1 video" else "$moviesCount videos"
+                            ),
+                            StorageFolderItem(
+                                name = "Download",
+                                path = "Internal Storage / Download",
+                                iconResId = R.drawable.ic_folder_download,
+                                badgeText = if (downloadCount > 0) "$downloadCount videos" else "Ready"
+                            ),
+                            StorageFolderItem(
+                                name = "DCIM",
+                                path = "Internal Storage / DCIM",
+                                iconResId = R.drawable.ic_folder_camera,
+                                badgeText = if (dcimCount > 0) "$dcimCount videos" else "Camera"
+                            ),
+                            StorageFolderItem(
+                                name = "Music",
+                                path = "Internal Storage / Music",
+                                iconResId = R.drawable.ic_folder_music,
+                                badgeText = "Audio"
+                            )
+                        )
+
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusProperties {
+                                    down = FocusRequester.Cancel
+                                },
+                            horizontalArrangement = Arrangement.spacedBy(24.dp),
+                            contentPadding = PaddingValues(start = 40.dp, end = 56.dp, top = 24.dp, bottom = 24.dp)
+                        ) {
+                            itemsIndexed(discoverableFolders) { index, folder ->
+                                val cardModifier = if (index == 0) {
+                                    Modifier
+                                        .width(240.dp)
+                                        .focusRequester(firstFolderFocusRequester)
+                                        .focusProperties {
+                                            if (sidebarHomeFocusRequester != null) {
+                                                left = sidebarHomeFocusRequester
+                                            }
+                                        }
+                                } else {
+                                    Modifier.width(240.dp)
+                                }
+
+                                LumaCard(
+                                    onClick = { /* Functional shortcut: Folder navigation in upcoming milestone */ },
+                                    modifier = cardModifier
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.Top
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(44.dp)
+                                                    .background(
+                                                        color = LumaTheme.colors.surfaceContainerHighest,
+                                                        shape = RoundedCornerShape(10.dp)
+                                                    ),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(id = folder.iconResId),
+                                                    contentDescription = folder.name,
+                                                    tint = LumaTheme.colors.cyan,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .background(
+                                                        color = LumaTheme.colors.surfaceContainerHighest,
+                                                        shape = RoundedCornerShape(4.dp)
+                                                    )
+                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            ) {
+                                                Text(
+                                                    text = folder.badgeText,
+                                                    style = LumaTheme.typography.labelSm,
+                                                    color = LumaTheme.colors.textSecondary
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(16.dp))
+
+                                        Text(
+                                            text = folder.name,
+                                            style = LumaTheme.typography.labelLg,
+                                            color = LumaTheme.colors.textPrimary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = folder.path,
+                                            style = LumaTheme.typography.bodySm,
+                                            color = LumaTheme.colors.textSecondary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(64.dp))
+                    }
                 }
             }
-        }
+    }
+
+    if (detailsVideo != null) {
+        MediaDetailsDialog(
+            video = detailsVideo!!,
+            onDismiss = { detailsVideo = null }
+        )
     }
 }
+}
+
+/**
+ * Storage folder item representing a real discoverable media directory on local storage.
+ */
+private data class StorageFolderItem(
+    val name: String,
+    val path: String,
+    val iconResId: Int,
+    val badgeText: String
+)

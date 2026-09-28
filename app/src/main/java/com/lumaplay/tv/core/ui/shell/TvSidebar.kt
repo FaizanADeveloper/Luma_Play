@@ -4,7 +4,13 @@ import android.os.Environment
 import android.os.StatFs
 import android.view.KeyEvent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -22,7 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,10 +46,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.lumaplay.tv.R
 import com.lumaplay.tv.core.theme.LumaTheme
+import com.lumaplay.tv.core.ui.components.LumaBrandHeader
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -52,13 +62,13 @@ import java.util.Locale
 /**
  * Top-level TV navigation destinations defined in Google Stitch designs.
  */
-enum class TvNavDestination(val label: String, val iconText: String) {
-    Home("Home", "⌂"),
-    Videos("Videos", "▶"),
-    Music("Music", "♫"),
-    Folders("Folders", "📁"),
-    Search("Search", "🔍"),
-    Settings("Settings", "⚙")
+enum class TvNavDestination(val label: String, val iconRes: Int) {
+    Home("Home", R.drawable.ic_nav_home),
+    Videos("Videos", R.drawable.ic_nav_videos),
+    Music("Music", R.drawable.ic_nav_music),
+    Folders("Folders", R.drawable.ic_nav_folders),
+    Search("Search", R.drawable.ic_nav_search),
+    Settings("Settings", R.drawable.ic_nav_settings)
 }
 
 /**
@@ -66,11 +76,13 @@ enum class TvNavDestination(val label: String, val iconText: String) {
  *
  * Implements Google Stitch specifications:
  * - Collapsed width of 88dp (icons and brand emblem).
- * - Expands to 260dp when navigated into via remote D-pad.
- * - Active cyan pill (4dp width) pinned to the left edge of the selected destination.
- * - Real storage capacity query via [StatFs] (no hardcoded fake USB labels).
- * - Real live system time ticker.
- * - Does not trap focus: pressing D-pad Right smoothly exits into main content.
+ * - Expands to 280dp when navigated into via remote D-pad.
+ * - Official LumaPlay Ribbon Play Emblem and two-tone brand wordmark.
+ * - Consistent vector Material navigation symbols.
+ * - Active pill indicator styling with Stitch elevated container ([LumaTheme.colors.surfaceContainerHigh]).
+ * - Real internal storage query via [StatFs] with pulsing indicator dot.
+ * - Live system time ticker formatted with TV typography.
+ * - Non-blocking D-pad traversal: pressing D-pad Right smoothly exits into main content.
  *
  * @param selectedDestination Currently active navigation destination.
  * @param onDestinationSelected Callback when user presses D-pad Center on a destination.
@@ -89,7 +101,7 @@ fun TvSidebar(
     var isSidebarFocused by remember { mutableStateOf(false) }
 
     val sidebarWidth by animateDpAsState(
-        targetValue = if (isSidebarFocused) 260.dp else 88.dp,
+        targetValue = if (isSidebarFocused) 280.dp else 88.dp,
         label = "SidebarWidthAnimation"
     )
 
@@ -116,6 +128,18 @@ fun TvSidebar(
         }
     }
 
+    // Pulse animation for storage telemetry sensor
+    val infiniteTransition = rememberInfiniteTransition(label = "StoragePulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "StoragePulseAlpha"
+    )
+
     Box(
         modifier = modifier
             .width(sidebarWidth)
@@ -132,47 +156,20 @@ fun TvSidebar(
         ) {
             // --- 1. Brand Logo & Header ---
             Column(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(LumaTheme.shapes.medium)
-                            .background(LumaTheme.colors.primary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "L",
-                            style = LumaTheme.typography.headlineSm,
-                            color = LumaTheme.colors.textPrimary
-                        )
-                    }
+                LumaBrandHeader(
+                    showWordmark = isSidebarFocused,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                    emblemSize = 36.dp
+                )
 
-                    AnimatedVisibility(
-                        visible = isSidebarFocused,
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        Row {
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = "LumaPlay",
-                                style = LumaTheme.typography.headlineMd,
-                                color = LumaTheme.colors.textPrimary
-                            )
-                        }
-                    }
-                }
+                Spacer(modifier = Modifier.height(20.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // --- 2. Nav Items ---
+                // --- 2. Navigation Items ---
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .focusGroup()
+                        .focusGroup(),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     TvNavDestination.entries.forEach { destination ->
                         val isSelected = destination == selectedDestination
@@ -187,14 +184,13 @@ fun TvSidebar(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(48.dp)
-                                .padding(vertical = 4.dp)
+                                .height(46.dp)
                                 .then(itemFocusModifier)
                                 .clip(LumaTheme.shapes.medium)
                                 .background(
                                     when {
                                         isItemFocused -> LumaTheme.colors.surfaceContainerHigh
-                                        isSelected -> LumaTheme.colors.surface.copy(alpha = 0.6f)
+                                        isSelected -> LumaTheme.colors.surfaceContainerHigh
                                         else -> Color.Transparent
                                     }
                                 )
@@ -230,121 +226,177 @@ fun TvSidebar(
                                     }
                                 }
                         ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Active cyan pill indicator on left edge
-                            if (isSelected) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(4.dp)
-                                        .fillMaxHeight()
-                                        .background(LumaTheme.colors.cyan)
-                                )
-                            } else {
-                                Spacer(modifier = Modifier.width(4.dp))
-                            }
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            Text(
-                                text = destination.iconText,
-                                style = LumaTheme.typography.headlineSm,
-                                color = if (isItemFocused || isSelected) LumaTheme.colors.cyan else LumaTheme.colors.textSecondary
-                            )
-
-                            AnimatedVisibility(
-                                visible = isSidebarFocused,
-                                enter = fadeIn(),
-                                exit = fadeOut()
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight()
+                                    .padding(horizontal = 14.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row {
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Text(
-                                        text = destination.label,
-                                        style = LumaTheme.typography.labelLg,
-                                        color = if (isItemFocused || isSelected) LumaTheme.colors.textPrimary else LumaTheme.colors.textSecondary
-                                    )
+                                // Consistent Material Vector Icon
+                                Icon(
+                                    painter = painterResource(id = destination.iconRes),
+                                    contentDescription = destination.label,
+                                    modifier = Modifier.size(22.dp),
+                                    tint = if (isItemFocused || isSelected) {
+                                        LumaTheme.colors.cyan
+                                    } else {
+                                        LumaTheme.colors.textSecondary
+                                    }
+                                )
+
+                                AnimatedVisibility(
+                                    visible = isSidebarFocused,
+                                    enter = fadeIn(),
+                                    exit = fadeOut()
+                                ) {
+                                    Row {
+                                        Spacer(modifier = Modifier.width(14.dp))
+                                        Text(
+                                            text = destination.label,
+                                            style = LumaTheme.typography.labelLg,
+                                            color = if (isItemFocused || isSelected) {
+                                                LumaTheme.colors.textPrimary
+                                            } else {
+                                                LumaTheme.colors.textSecondary
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
 
             // --- 3. Bottom Storage & Time Telemetry ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 4.dp)
+                    .padding(horizontal = 2.dp)
             ) {
-                // Storage Bar
+                // Real Internal Storage Card (Stitch: bg-surface-container-low, rounded-lg)
                 if (isSidebarFocused) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(LumaTheme.shapes.medium)
-                            .background(LumaTheme.colors.surface)
-                            .padding(10.dp)
+                            .background(LumaTheme.colors.surfaceContainerLow)
+                            .padding(12.dp)
                     ) {
                         Column {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    // Pulsing indicator dot
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(LumaTheme.colors.cyan.copy(alpha = pulseAlpha))
+                                    )
+                                    Text(
+                                        text = "Internal Storage",
+                                        style = LumaTheme.typography.labelSm,
+                                        color = LumaTheme.colors.textSecondary
+                                    )
+                                }
                                 Text(
-                                    text = "Device Storage",
-                                    style = LumaTheme.typography.labelSm,
-                                    color = LumaTheme.colors.textSecondary
-                                )
-                                Text(
-                                    text = "${storageInfo.first} GB Free",
+                                    text = "Ready",
                                     style = LumaTheme.typography.labelSm,
                                     color = LumaTheme.colors.cyan
                                 )
                             }
-                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Storage Capacity Bar
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
+                                    .clip(LumaTheme.shapes.pill)
                                     .background(LumaTheme.colors.surfaceContainerHighest)
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth(storageInfo.third)
                                         .fillMaxHeight()
-                                        .background(LumaTheme.colors.primary)
+                                        .background(LumaTheme.colors.cyan)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // Metrics Labels
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "${storageInfo.first} GB Free",
+                                    style = LumaTheme.typography.labelSm,
+                                    color = LumaTheme.colors.outline
+                                )
+                                Text(
+                                    text = "${storageInfo.second} GB",
+                                    style = LumaTheme.typography.labelSm,
+                                    color = LumaTheme.colors.outline
                                 )
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+                } else {
+                    // Compact mini indicator when collapsed
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(LumaTheme.colors.cyan.copy(alpha = pulseAlpha))
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
                 }
 
-                // Clock
+                // Clock & System Row
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
                     horizontalArrangement = if (isSidebarFocused) Arrangement.SpaceBetween else Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (isSidebarFocused) {
                         Text(
                             text = "TV System",
+                            style = LumaTheme.typography.labelMd,
+                            color = LumaTheme.colors.outline
+                        )
+                        Text(
+                            text = currentTime,
+                            style = LumaTheme.typography.headlineSm,
+                            color = LumaTheme.colors.textPrimary
+                        )
+                    } else {
+                        Text(
+                            text = currentTime,
                             style = LumaTheme.typography.labelSm,
-                            color = LumaTheme.colors.textMuted
+                            color = LumaTheme.colors.textSecondary
                         )
                     }
-                    Text(
-                        text = currentTime,
-                        style = LumaTheme.typography.labelMd,
-                        color = LumaTheme.colors.textSecondary
-                    )
                 }
             }
         }
