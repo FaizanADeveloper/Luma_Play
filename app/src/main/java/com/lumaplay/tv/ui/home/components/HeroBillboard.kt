@@ -71,8 +71,8 @@ fun HeroBillboard(
     featuredVideo: VideoItem?,
     onPlay: (VideoItem) -> Unit,
     onDetails: (VideoItem) -> Unit,
-    onRescan: () -> Unit,
     modifier: Modifier = Modifier,
+    onScan: (() -> Unit)? = null,
     playButtonFocusRequester: FocusRequester? = null,
     sidebarHomeFocusRequester: FocusRequester? = null,
     onFocusGained: (() -> Unit)? = null
@@ -328,22 +328,6 @@ fun HeroBillboard(
                             Text(text = "Details & Specs")
                         }
                     }
-
-                    // Rescan button
-                    LumaButton(
-                        onClick = onRescan,
-                        variant = LumaButtonVariant.Ghost
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_action_refresh),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Rescan")
-                        }
-                    }
                 }
             }
         } else {
@@ -366,31 +350,33 @@ fun HeroBillboard(
                     style = LumaTheme.typography.bodyMd,
                     color = LumaTheme.colors.textSecondary
                 )
-                Spacer(modifier = Modifier.height(28.dp))
-                LumaButton(
-                    onClick = onRescan,
-                    variant = LumaButtonVariant.Primary,
-                    modifier = Modifier
-                        .focusProperties {
-                            up = FocusRequester.Cancel
-                            if (sidebarHomeFocusRequester != null) {
-                                left = sidebarHomeFocusRequester
+                if (onScan != null) {
+                    Spacer(modifier = Modifier.height(28.dp))
+                    LumaButton(
+                        onClick = onScan,
+                        variant = LumaButtonVariant.Primary,
+                        modifier = Modifier
+                            .focusProperties {
+                                up = FocusRequester.Cancel
+                                if (sidebarHomeFocusRequester != null) {
+                                    left = sidebarHomeFocusRequester
+                                }
                             }
+                            .then(
+                                if (playButtonFocusRequester != null) {
+                                    Modifier.focusRequester(playButtonFocusRequester)
+                                } else Modifier
+                            )
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_action_refresh),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Scan Device Storage")
                         }
-                        .then(
-                            if (playButtonFocusRequester != null) {
-                                Modifier.focusRequester(playButtonFocusRequester)
-                            } else Modifier
-                        )
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_action_refresh),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Scan Device Storage")
                     }
                 }
             }

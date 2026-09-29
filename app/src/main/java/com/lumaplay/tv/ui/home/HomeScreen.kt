@@ -24,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.focusGroup
@@ -48,9 +49,11 @@ import com.lumaplay.tv.core.ui.components.LumaButton
 import com.lumaplay.tv.core.ui.components.LumaButtonVariant
 import com.lumaplay.tv.core.ui.components.LumaCard
 import com.lumaplay.tv.data.model.VideoItem
+import androidx.compose.ui.text.font.FontWeight
 import com.lumaplay.tv.ui.home.components.HeroBillboard
 import com.lumaplay.tv.ui.home.components.MediaCarouselRow
 import com.lumaplay.tv.ui.home.components.MediaDetailsDialog
+import com.lumaplay.tv.ui.home.components.StorageIndexFooter
 
 /**
  * Full Cinematic TV Home Dashboard.
@@ -233,10 +236,11 @@ fun HomeScreen(
                 val scrollState = rememberScrollState()
                 val coroutineScope = rememberCoroutineScope()
                 val firstFolderFocusRequester = remember { FocusRequester() }
+                val rescanFocusRequester = remember { FocusRequester() }
 
                 val density = LocalDensity.current
                 val topSafeMargin = with(density) { 16.dp.toPx() }
-                val bottomSafeMargin = with(density) { 48.dp.toPx() }
+                val bottomSafeMargin = with(density) { 96.dp.toPx() }
                 val heroThresholdPx = with(density) { 450.dp.toPx() }
 
                 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
@@ -284,7 +288,6 @@ fun HomeScreen(
                             featuredVideo = featuredVideo,
                             onPlay = onVideoClick,
                             onDetails = { video -> detailsVideo = video },
-                            onRescan = onScanClick,
                             playButtonFocusRequester = playButtonFocusRequester,
                             sidebarHomeFocusRequester = sidebarHomeFocusRequester,
                             onFocusGained = {
@@ -302,7 +305,10 @@ fun HomeScreen(
                         // --- 2. Recently Added Videos Swimlane ---
                         MediaCarouselRow(
                             title = "Recently Added Videos",
-                            badgeText = "${uiState.videos.size} Videos",
+                            badgeText = when (uiState.videos.size) {
+                                1 -> "1 Video"
+                                else -> "${uiState.videos.size} Videos"
+                            },
                             videos = uiState.videos,
                             onVideoClick = onVideoClick,
                             sidebarHomeFocusRequester = sidebarHomeFocusRequester,
@@ -362,13 +368,21 @@ fun HomeScreen(
                                 name = "Download",
                                 path = "Internal Storage / Download",
                                 iconResId = R.drawable.ic_folder_download,
-                                badgeText = if (downloadCount > 0) "$downloadCount videos" else "Ready"
+                                badgeText = when {
+                                    downloadCount == 1 -> "1 video"
+                                    downloadCount > 1 -> "$downloadCount videos"
+                                    else -> "Ready"
+                                }
                             ),
                             StorageFolderItem(
                                 name = "DCIM",
                                 path = "Internal Storage / DCIM",
                                 iconResId = R.drawable.ic_folder_camera,
-                                badgeText = if (dcimCount > 0) "$dcimCount videos" else "Camera"
+                                badgeText = when {
+                                    dcimCount == 1 -> "1 video"
+                                    dcimCount > 1 -> "$dcimCount videos"
+                                    else -> "Camera"
+                                }
                             ),
                             StorageFolderItem(
                                 name = "Music",
@@ -382,7 +396,7 @@ fun HomeScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .focusProperties {
-                                    down = FocusRequester.Cancel
+                                    down = rescanFocusRequester
                                 },
                             horizontalArrangement = Arrangement.spacedBy(24.dp),
                             contentPadding = PaddingValues(start = 40.dp, end = 56.dp, top = 24.dp, bottom = 24.dp)
@@ -393,12 +407,17 @@ fun HomeScreen(
                                         .width(240.dp)
                                         .focusRequester(firstFolderFocusRequester)
                                         .focusProperties {
+                                            down = rescanFocusRequester
                                             if (sidebarHomeFocusRequester != null) {
                                                 left = sidebarHomeFocusRequester
                                             }
                                         }
                                 } else {
-                                    Modifier.width(240.dp)
+                                    Modifier
+                                        .width(240.dp)
+                                        .focusProperties {
+                                            down = rescanFocusRequester
+                                        }
                                 }
 
                                 LumaCard(
@@ -470,7 +489,112 @@ fun HomeScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(64.dp))
+                        Spacer(modifier = Modifier.height(28.dp))
+
+                        // --- 4. Storage & Indexing Diagnostics Footer ---
+                        val totalVideosSize = remember(uiState.videos) {
+                            uiState.videos.sumOf { it.sizeBytes }
+                        }
+
+                        StorageIndexFooter(
+                            videosCount = uiState.videos.size,
+                            totalSizeBytes = totalVideosSize,
+                            lastScannedTimestampMs = uiState.lastScannedTimestampMs,
+                            isRescanning = uiState.isRescanning,
+                            rescanErrorMessage = uiState.rescanErrorMessage,
+                            onRescanClick = onScanClick,
+                            rescanFocusRequester = rescanFocusRequester,
+                            sidebarHomeFocusRequester = sidebarHomeFocusRequester,
+                            upFocusRequester = firstFolderFocusRequester,
+                            modifier = Modifier.padding(horizontal = 40.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // --- 5. Remote Navigation Guidance Pill (Stitch Reference) ---
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 40.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(9999.dp))
+                                    .background(LumaTheme.colors.surfaceContainerHighest.copy(alpha = 0.90f))
+                                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = "DPAD:",
+                                            style = LumaTheme.typography.labelSm,
+                                            fontWeight = FontWeight.Bold,
+                                            color = LumaTheme.colors.cyan
+                                        )
+                                        Text(
+                                            text = "Navigate",
+                                            style = LumaTheme.typography.labelSm,
+                                            color = LumaTheme.colors.textPrimary
+                                        )
+                                    }
+
+                                    Text(
+                                        text = "•",
+                                        style = LumaTheme.typography.labelSm,
+                                        color = LumaTheme.colors.outline
+                                    )
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = "OK:",
+                                            style = LumaTheme.typography.labelSm,
+                                            fontWeight = FontWeight.Bold,
+                                            color = LumaTheme.colors.cyan
+                                        )
+                                        Text(
+                                            text = "Select",
+                                            style = LumaTheme.typography.labelSm,
+                                            color = LumaTheme.colors.textPrimary
+                                        )
+                                    }
+
+                                    Text(
+                                        text = "•",
+                                        style = LumaTheme.typography.labelSm,
+                                        color = LumaTheme.colors.outline
+                                    )
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = "BACK:",
+                                            style = LumaTheme.typography.labelSm,
+                                            fontWeight = FontWeight.Bold,
+                                            color = LumaTheme.colors.cyan
+                                        )
+                                        Text(
+                                            text = "Exit",
+                                            style = LumaTheme.typography.labelSm,
+                                            color = LumaTheme.colors.textPrimary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(48.dp))
                     }
                 }
             }

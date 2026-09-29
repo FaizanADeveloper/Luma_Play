@@ -19,7 +19,12 @@ sealed interface HomeUiState {
     data object Empty : HomeUiState
 
     /** Scan completed with discovered local video files. */
-    data class Success(val videos: List<VideoItem>) : HomeUiState
+    data class Success(
+        val videos: List<VideoItem>,
+        val isRescanning: Boolean = false,
+        val lastScannedTimestampMs: Long? = null,
+        val rescanErrorMessage: String? = null
+    ) : HomeUiState
 
     /** Scan failed with an error. */
     data class Error(val message: String) : HomeUiState

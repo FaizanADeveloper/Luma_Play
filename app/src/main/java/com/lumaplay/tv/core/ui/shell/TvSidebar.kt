@@ -1,8 +1,7 @@
 package com.lumaplay.tv.core.ui.shell
 
-import android.os.Environment
-import android.os.StatFs
 import android.view.KeyEvent
+import com.lumaplay.tv.core.util.StorageTelemetry
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -105,18 +104,8 @@ fun TvSidebar(
         label = "SidebarWidthAnimation"
     )
 
-    // Dynamic real storage query
-    val storageInfo = remember {
-        runCatching {
-            val stat = StatFs(Environment.getExternalStorageDirectory().path)
-            val freeBytes = stat.availableBytes
-            val totalBytes = stat.totalBytes
-            val freeGb = freeBytes / (1024L * 1024L * 1024L)
-            val totalGb = totalBytes / (1024L * 1024L * 1024L)
-            val usedRatio = if (totalBytes > 0) 1f - (freeBytes.toFloat() / totalBytes.toFloat()) else 0f
-            Triple(freeGb, totalGb, usedRatio.coerceIn(0f, 1f))
-        }.getOrDefault(Triple(0L, 0L, 0f))
-    }
+    // Dynamic real storage query via shared StorageTelemetry
+    val storageTelemetry = remember { StorageTelemetry.query() }
 
     // Live clock ticker
     var currentTime by remember { mutableStateOf("") }
@@ -308,9 +297,9 @@ fun TvSidebar(
                                     )
                                 }
                                 Text(
-                                    text = "Ready",
+                                    text = if (storageTelemetry.isAvailable) "Available" else "Unavailable",
                                     style = LumaTheme.typography.labelSm,
-                                    color = LumaTheme.colors.cyan
+                                    color = if (storageTelemetry.isAvailable) LumaTheme.colors.cyan else LumaTheme.colors.outline
                                 )
                             }
 
@@ -326,7 +315,7 @@ fun TvSidebar(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxWidth(storageInfo.third)
+                                        .fillMaxWidth(storageTelemetry.usedRatio)
                                         .fillMaxHeight()
                                         .background(LumaTheme.colors.cyan)
                                 )
@@ -340,12 +329,12 @@ fun TvSidebar(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "${storageInfo.first} GB Free",
+                                    text = if (storageTelemetry.isAvailable) "${storageTelemetry.freeGb} GB Free" else "--",
                                     style = LumaTheme.typography.labelSm,
                                     color = LumaTheme.colors.outline
                                 )
                                 Text(
-                                    text = "${storageInfo.second} GB",
+                                    text = if (storageTelemetry.isAvailable) "${storageTelemetry.totalGb} GB Total" else "--",
                                     style = LumaTheme.typography.labelSm,
                                     color = LumaTheme.colors.outline
                                 )
