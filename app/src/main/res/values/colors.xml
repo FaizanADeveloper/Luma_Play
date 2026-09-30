@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- LumaPlay TV Core Brand Palette (Stitch Design Reference) -->
+    <color name="luma_bg">#0D1322</color>
+    <color name="luma_surface">#0D1322</color>
+    <color name="luma_surface_container">#191F2F</color>
+    <color name="luma_primary">#4285F4</color>
+    <color name="luma_cyan">#38BDF8</color>
+    <color name="luma_cyan_light">#7BD0FF</color>
+    <color name="luma_violet">#8B5CF6</color>
+    <color name="luma_text_primary">#F8FAFC</color>
+    <color name="luma_text_secondary">#94A3B8</color>
+</resources>

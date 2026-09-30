@@ -7,6 +7,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,6 +46,7 @@ import com.lumaplay.tv.player.PlayerScreen
 import com.lumaplay.tv.ui.home.HomeScreen
 import com.lumaplay.tv.ui.home.HomeUiState
 import com.lumaplay.tv.ui.home.HomeViewModel
+import com.lumaplay.tv.ui.splash.LumaLaunchScreen
 import com.lumaplay.tv.ui.videos.VideoLibraryScreen
 import com.lumaplay.tv.ui.videos.VideosViewModel
 
@@ -94,6 +98,7 @@ class MainActivity : ComponentActivity() {
                 val uiState by homeViewModel.uiState.collectAsState()
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
                 var selectedDestination by remember { mutableStateOf(TvNavDestination.Home) }
+                var isLaunchCompleted by remember { mutableStateOf(false) }
                 val heroPlayButtonRequester = remember { FocusRequester() }
                 val dashboardFocusRequester = remember { FocusRequester() }
                 val sidebarHomeFocusRequester = remember { FocusRequester() }
@@ -262,6 +267,16 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         else -> { /* Player screen is not active */ }
+                    }
+
+                    // --- Full Branded Launch Experience Overlay ---
+                    AnimatedVisibility(
+                        visible = !isLaunchCompleted,
+                        exit = fadeOut(animationSpec = tween(400))
+                    ) {
+                        LumaLaunchScreen(
+                            onLaunchComplete = { isLaunchCompleted = true }
+                        )
                     }
                 }
             }

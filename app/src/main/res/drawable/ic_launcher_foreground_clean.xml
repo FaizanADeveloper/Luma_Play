@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Variation A: Official LumaPlay Ribbon Emblem Centered on Clean Canvas -->
+    <group
+        android:scaleX="1.25"
+        android:scaleY="1.25"
+        android:translateX="18.19"
+        android:translateY="24.0">
+        <!-- Outer Play Ribbon: Cyan to Blue Gradient -->
+        <path
+            android:pathData="M12,8 C12,5.5 14.5,4 16.8,5.2 L44.2,21.2 C46.4,22.5 46.4,25.5 44.2,26.8 L16.8,42.8 C14.5,44 12,42.5 12,40 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="12"
+                    android:startY="4"
+                    android:endX="44.2"
+                    android:endY="44"
+                    android:startColor="#FF38BDF8"
+                    android:endColor="#FF4285F4" />
+            </aapt:attr>
+        </path>
+        <!-- Inner Ribbon Fold: Violet to Blue Gradient with 85% Opacity -->
+        <path
+            android:fillAlpha="0.85"
+            android:pathData="M26,15 L44.2,25.6 C45.5,26.4 45.5,27.6 44.2,28.4 L34,34.5 C31,36.3 27,34 27,30 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="26"
+                    android:startY="15"
+                    android:endX="44.2"
+                    android:endY="35"
+                    android:startColor="#FF8B5CF6"
+                    android:endColor="#FF4285F4" />
+            </aapt:attr>
+        </path>
+        <!-- Core White Dot -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M17.5,24 A3.5,3.5 0 1,0 24.5,24 A3.5,3.5 0 1,0 17.5,24 Z" />
+    </group>
+</vector>

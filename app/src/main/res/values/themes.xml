@@ -1,4 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.LumaPlay" parent="Theme.AppCompat.DayNight.NoActionBar" />
+    <!-- Base Application Theme: Deep Midnight Navy Window Background -->
+    <style name="Theme.LumaPlay" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/luma_bg</item>
+        <item name="android:colorBackground">@color/luma_bg</item>
+    </style>
 </resources>
