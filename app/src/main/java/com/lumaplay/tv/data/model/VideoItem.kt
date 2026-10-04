@@ -25,7 +25,8 @@ data class VideoItem(
     val dateAdded: Long,
     val folderName: String = "Internal Storage / Videos",
     val mimeType: String? = null,
-    val playbackPositionMs: Long = 0L
+    val playbackPositionMs: Long = 0L,
+    val filePath: String? = null
 ) {
     /**
      * Clean display title without raw file extensions.

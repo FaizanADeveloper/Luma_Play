@@ -99,7 +99,9 @@ fun LumaBadge(
         Text(
             text = text,
             style = LumaTheme.typography.labelSm,
-            color = contentColor
+            color = contentColor,
+            maxLines = 1,
+            softWrap = false
         )
     }
 }

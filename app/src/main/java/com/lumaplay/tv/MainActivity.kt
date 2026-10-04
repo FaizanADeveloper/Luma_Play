@@ -1,5 +1,6 @@
 package com.lumaplay.tv
 
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -46,6 +47,8 @@ import com.lumaplay.tv.player.PlayerScreen
 import com.lumaplay.tv.ui.home.HomeScreen
 import com.lumaplay.tv.ui.home.HomeUiState
 import com.lumaplay.tv.ui.home.HomeViewModel
+import com.lumaplay.tv.ui.details.VideoDetailsScreen
+import com.lumaplay.tv.ui.details.VideoDetailsViewModel
 import com.lumaplay.tv.ui.splash.LumaLaunchScreen
 import com.lumaplay.tv.ui.videos.VideoLibraryScreen
 import com.lumaplay.tv.ui.videos.VideosViewModel
@@ -57,7 +60,7 @@ class MainActivity : ComponentActivity() {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return HomeViewModel(
-                    videoRepository = MediaStoreVideoRepository(applicationContext.contentResolver)
+                    videoRepository = MediaStoreVideoRepository(applicationContext)
                 ) as T
             }
         }
@@ -74,11 +77,13 @@ class MainActivity : ComponentActivity() {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return VideosViewModel(
-                    videoRepository = MediaStoreVideoRepository(applicationContext.contentResolver)
+                    videoRepository = MediaStoreVideoRepository(applicationContext)
                 ) as T
             }
         }
     }
+
+    private val videoDetailsViewModel by viewModels<VideoDetailsViewModel>()
 
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,6 +102,8 @@ class MainActivity : ComponentActivity() {
             LumaPlayTheme {
                 val uiState by homeViewModel.uiState.collectAsState()
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
+                var detailsOriginScreen by remember { mutableStateOf<Screen>(Screen.Home) }
+                var previousScreenBeforePlayer by remember { mutableStateOf<Screen?>(null) }
                 var selectedDestination by remember { mutableStateOf(TvNavDestination.Home) }
                 var isLaunchCompleted by remember { mutableStateOf(false) }
                 val heroPlayButtonRequester = remember { FocusRequester() }
@@ -104,6 +111,7 @@ class MainActivity : ComponentActivity() {
                 val sidebarHomeFocusRequester = remember { FocusRequester() }
                 val sidebarVideosFocusRequester = remember { FocusRequester() }
                 val videoLibraryFocusRequester = remember { FocusRequester() }
+                val videoDetailsPlayFocusRequester = remember { FocusRequester() }
 
                 val permissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
@@ -122,6 +130,16 @@ class MainActivity : ComponentActivity() {
                 // Handle Back press on Videos screen to return to Home dashboard
                 BackHandler(enabled = currentScreen is Screen.Videos) {
                     currentScreen = Screen.Home
+                }
+
+                // Handle Back press on VideoDetail screen to return to originating screen
+                BackHandler(enabled = currentScreen is Screen.VideoDetail) {
+                    currentScreen = detailsOriginScreen
+                    selectedDestination = if (detailsOriginScreen is Screen.Videos) {
+                        TvNavDestination.Videos
+                    } else {
+                        TvNavDestination.Home
+                    }
                 }
 
                 // Listen for onResume to detect when user returns from Android Settings
@@ -145,138 +163,160 @@ class MainActivity : ComponentActivity() {
                     when (currentScreen) {
                         is Screen.Videos -> selectedDestination = TvNavDestination.Videos
                         is Screen.Home -> selectedDestination = TvNavDestination.Home
+                        is Screen.VideoDetail -> {
+                            selectedDestination = if (detailsOriginScreen is Screen.Videos) {
+                                TvNavDestination.Videos
+                            } else {
+                                TvNavDestination.Home
+                            }
+                        }
                         else -> { /* Player is fullscreen — sidebar hidden */ }
                     }
                 }
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    // --- TV Shell (Sidebar + TopBar + Active Screen) ---
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        TvSidebar(
-                            selectedDestination = selectedDestination,
-                            onDestinationSelected = { destination ->
-                                selectedDestination = destination
-                                // Map sidebar tap → screen navigation
-                                when (destination) {
-                                    TvNavDestination.Home -> currentScreen = Screen.Home
-                                    TvNavDestination.Videos -> currentScreen = Screen.Videos
-                                    else -> { /* B2-M3…M5 destinations — coming in later milestones */ }
-                                }
-                            },
-                            dashboardFocusRequester = dashboardFocusRequester,
-                            homeFocusRequester = sidebarHomeFocusRequester,
-                            videosFocusRequester = sidebarVideosFocusRequester
-                        )
-
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .focusRequester(dashboardFocusRequester)
-                                .focusRestorer {
-                                    if (currentScreen is Screen.Home && uiState is HomeUiState.Success) {
-                                        heroPlayButtonRequester
-                                    } else if (currentScreen is Screen.Videos) {
-                                        videoLibraryFocusRequester
-                                    } else {
-                                        FocusRequester.Default
-                                    }
-                                }
-                                .focusProperties {
-                                    left = if (currentScreen is Screen.Videos) {
-                                        sidebarVideosFocusRequester
-                                    } else {
-                                        sidebarHomeFocusRequester
-                                    }
-                                }
-                        ) {
-                            TvTopBar()
-
-                            // --- Active content area ---
-                            when (currentScreen) {
-                                is Screen.Home -> {
-                                    HomeScreen(
-                                        uiState = uiState,
-                                        onScanClick = { homeViewModel.scanVideos() },
-                                        onRequestPermission = {
-                                            permissionLauncher.launch(StoragePermissionHelper.requiredPermission)
-                                        },
-                                        onVideoClick = { video ->
-                                            currentScreen = Screen.Player(video)
-                                        },
-                                        playButtonFocusRequester = heroPlayButtonRequester,
-                                        sidebarHomeFocusRequester = sidebarHomeFocusRequester
-                                    )
-                                }
-
-                                is Screen.Videos -> {
-                                    VideoLibraryScreen(
-                                        viewModel = videosViewModel,
-                                        onVideoClick = { video ->
-                                            // B2-M1: go directly to player.
-                                            // B2-M2: this will route to Screen.VideoDetail(video) instead.
-                                            currentScreen = Screen.Player(video)
-                                        },
-                                        onRequestPermission = {
-                                            permissionLauncher.launch(StoragePermissionHelper.requiredPermission)
-                                        },
-                                        sidebarVideosFocusRequester = sidebarVideosFocusRequester,
-                                        contentFocusRequester = videoLibraryFocusRequester
-                                    )
-                                }
-
-                                is Screen.VideoDetail -> {
-                                    // VideoDetailsScreen — implemented in B2-M2.
-                                    // For now, navigate directly to the player so the
-                                    // card's onClick is never left without a handler.
-                                    val detail = currentScreen as Screen.VideoDetail
-                                    currentScreen = Screen.Player(detail.video)
-                                }
-
-                                else -> {
-                                    // Other destinations (Music, Folders, Search) — B2-M3 to M5
-                                    HomeScreen(
-                                        uiState = uiState,
-                                        onScanClick = { homeViewModel.scanVideos() },
-                                        onRequestPermission = {
-                                            permissionLauncher.launch(StoragePermissionHelper.requiredPermission)
-                                        },
-                                        onVideoClick = { video ->
-                                            currentScreen = Screen.Player(video)
-                                        },
-                                        playButtonFocusRequester = heroPlayButtonRequester,
-                                        sidebarHomeFocusRequester = sidebarHomeFocusRequester
-                                    )
+                when (val screen = currentScreen) {
+                    is Screen.Player -> {
+                        // --- Fullscreen Video Player (Isolated from TV Shell and Overlays) ---
+                        PlayerScreen(
+                            video = screen.video,
+                            onBack = {
+                                // Return to whichever screen launched the player
+                                currentScreen = previousScreenBeforePlayer ?: when (selectedDestination) {
+                                    TvNavDestination.Videos -> Screen.Videos
+                                    else -> Screen.Home
                                 }
                             }
-                        }
+                        )
                     }
 
-                    // --- Fullscreen Video Player Overlay ---
-                    when (val screen = currentScreen) {
-                        is Screen.Player -> {
-                            PlayerScreen(
-                                video = screen.video,
-                                onBack = {
-                                    // Return to whichever library screen launched the player
-                                    currentScreen = when (selectedDestination) {
-                                        TvNavDestination.Videos -> Screen.Videos
-                                        else -> Screen.Home
+                    else -> {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            // --- TV Shell (Sidebar + TopBar + Active Screen) ---
+                            Row(modifier = Modifier.fillMaxSize()) {
+                                val contentContainerFocusRequester = remember { FocusRequester() }
+
+                                TvSidebar(
+                                    selectedDestination = selectedDestination,
+                                    onDestinationSelected = { destination ->
+                                        selectedDestination = destination
+                                        when (destination) {
+                                            TvNavDestination.Home -> currentScreen = Screen.Home
+                                            TvNavDestination.Videos -> currentScreen = Screen.Videos
+                                            else -> { /* B2-M3…M5 destinations — coming in later milestones */ }
+                                        }
+                                    },
+                                    dashboardFocusRequester = contentContainerFocusRequester,
+                                    homeFocusRequester = sidebarHomeFocusRequester,
+                                    videosFocusRequester = sidebarVideosFocusRequester
+                                )
+
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .focusRequester(contentContainerFocusRequester)
+                                        .focusRestorer {
+                                            if (currentScreen is Screen.Home && uiState is HomeUiState.Success) {
+                                                heroPlayButtonRequester
+                                            } else if (currentScreen is Screen.VideoDetail) {
+                                                videoDetailsPlayFocusRequester
+                                            } else {
+                                                FocusRequester.Default
+                                            }
+                                        }
+                                ) {
+                                    TvTopBar()
+
+                                    // --- Active content area ---
+                                    when (currentScreen) {
+                                        is Screen.Home -> {
+                                            HomeScreen(
+                                                uiState = uiState,
+                                                onScanClick = { homeViewModel.scanVideos() },
+                                                onRequestPermission = {
+                                                    permissionLauncher.launch(StoragePermissionHelper.requiredPermission)
+                                                },
+                                                onVideoClick = { video ->
+                                                    previousScreenBeforePlayer = Screen.Home
+                                                    currentScreen = Screen.Player(video)
+                                                },
+                                                onDetailsClick = { video ->
+                                                    detailsOriginScreen = Screen.Home
+                                                    previousScreenBeforePlayer = Screen.VideoDetail(video)
+                                                    currentScreen = Screen.VideoDetail(video)
+                                                },
+                                                playButtonFocusRequester = heroPlayButtonRequester,
+                                                sidebarHomeFocusRequester = sidebarHomeFocusRequester
+                                            )
+                                        }
+
+                                        is Screen.Videos -> {
+                                            VideoLibraryScreen(
+                                                viewModel = videosViewModel,
+                                                onVideoClick = { video ->
+                                                    detailsOriginScreen = Screen.Videos
+                                                    previousScreenBeforePlayer = Screen.VideoDetail(video)
+                                                    currentScreen = Screen.VideoDetail(video)
+                                                },
+                                                onRequestPermission = {
+                                                    permissionLauncher.launch(StoragePermissionHelper.requiredPermission)
+                                                },
+                                                sidebarVideosFocusRequester = sidebarVideosFocusRequester,
+                                                contentFocusRequester = videoLibraryFocusRequester
+                                            )
+                                        }
+
+                                        is Screen.VideoDetail -> {
+                                            val detail = currentScreen as Screen.VideoDetail
+                                            VideoDetailsScreen(
+                                                video = detail.video,
+                                                detailsViewModel = videoDetailsViewModel,
+                                                onPlay = { videoToPlay ->
+                                                    previousScreenBeforePlayer = currentScreen
+                                                    currentScreen = Screen.Player(videoToPlay)
+                                                },
+                                                onPlayFromBeginning = { videoToPlay ->
+                                                    previousScreenBeforePlayer = currentScreen
+                                                    currentScreen = Screen.Player(videoToPlay.copy(playbackPositionMs = 0L))
+                                                },
+                                                sidebarVideosFocusRequester = if (detailsOriginScreen is Screen.Videos) {
+                                                    sidebarVideosFocusRequester
+                                                } else {
+                                                    sidebarHomeFocusRequester
+                                                },
+                                                playButtonFocusRequester = videoDetailsPlayFocusRequester
+                                            )
+                                        }
+
+                                        else -> {
+                                            // Other destinations (Music, Folders, Search) — B2-M3 to M5
+                                            HomeScreen(
+                                                uiState = uiState,
+                                                onScanClick = { homeViewModel.scanVideos() },
+                                                onRequestPermission = {
+                                                    permissionLauncher.launch(StoragePermissionHelper.requiredPermission)
+                                                },
+                                                onVideoClick = { video ->
+                                                    currentScreen = Screen.Player(video)
+                                                },
+                                                playButtonFocusRequester = heroPlayButtonRequester,
+                                                sidebarHomeFocusRequester = sidebarHomeFocusRequester
+                                            )
+                                        }
                                     }
                                 }
-                            )
-                        }
-                        else -> { /* Player screen is not active */ }
-                    }
+                            }
 
-                    // --- Full Branded Launch Experience Overlay ---
-                    AnimatedVisibility(
-                        visible = !isLaunchCompleted,
-                        exit = fadeOut(animationSpec = tween(400))
-                    ) {
-                        LumaLaunchScreen(
-                            onLaunchComplete = { isLaunchCompleted = true }
-                        )
+                            // --- Full Branded Launch Experience Overlay ---
+                            AnimatedVisibility(
+                                visible = !isLaunchCompleted,
+                                exit = fadeOut(animationSpec = tween(400))
+                            ) {
+                                LumaLaunchScreen(
+                                    onLaunchComplete = { isLaunchCompleted = true }
+                                )
+                            }
+                        }
                     }
                 }
             }

@@ -73,6 +73,7 @@ fun HomeScreen(
     onRequestPermission: () -> Unit,
     onVideoClick: (VideoItem) -> Unit,
     modifier: Modifier = Modifier,
+    onDetailsClick: ((VideoItem) -> Unit)? = null,
     playButtonFocusRequester: FocusRequester? = null,
     sidebarHomeFocusRequester: FocusRequester? = null
 ) {
@@ -287,7 +288,13 @@ fun HomeScreen(
                         HeroBillboard(
                             featuredVideo = featuredVideo,
                             onPlay = onVideoClick,
-                            onDetails = { video -> detailsVideo = video },
+                            onDetails = { video ->
+                                if (onDetailsClick != null) {
+                                    onDetailsClick(video)
+                                } else {
+                                    detailsVideo = video
+                                }
+                            },
                             playButtonFocusRequester = playButtonFocusRequester,
                             sidebarHomeFocusRequester = sidebarHomeFocusRequester,
                             onFocusGained = {

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,6 +36,12 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -96,6 +103,11 @@ fun VideoLibraryScreen(
     val allFilterFocusRequester = contentFocusRequester ?: remember { FocusRequester() }
     val clearFilterFocusRequester = remember { FocusRequester() }
     var shouldFocusAllFilter by remember { mutableStateOf(false) }
+
+    // Request initial focus on "All Videos" filter when entering Video Library
+    LaunchedEffect(Unit) {
+        runCatching { allFilterFocusRequester.requestFocus() }
+    }
 
     // When filter is cleared from empty state, smoothly transfer focus to the "All" chip
     LaunchedEffect(shouldFocusAllFilter, uiState) {
@@ -172,9 +184,9 @@ fun VideoLibraryScreen(
 // Success content — header + filter row + grid + footer
 // -----------------------------------------------------------------
 
-@OptIn(ExperimentalTvMaterial3Api::class)
+@OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-private fun VideoLibrarySuccessContent(
+private fun androidx.compose.foundation.layout.ColumnScope.VideoLibrarySuccessContent(
     videos: List<VideoItem>,
     sortOrder: VideoSortOrder,
     activeFilter: VideoFilter,
@@ -239,7 +251,7 @@ private fun VideoLibrarySuccessContent(
             .padding(
                 start = spacing.tvSafeMargin,
                 end = spacing.tvSafeMargin,
-                bottom = spacing.spaceSm
+                bottom = 0.dp // Shifted space into grid contentPadding
             )
     )
 
@@ -249,10 +261,10 @@ private fun VideoLibrarySuccessContent(
         state = gridState,
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(0.9f),
-
+            .weight(1f),
         contentPadding = PaddingValues(
             start = spacing.tvSafeMargin,
+            top = 24.dp, // Provide space for top/left focus glow without moving layout
             end = spacing.tvSafeMargin,
             bottom = spacing.spaceLg
         ),
@@ -264,12 +276,14 @@ private fun VideoLibrarySuccessContent(
             key = { _, video -> video.id }
         ) { index, video ->
             val isFirstInRow = index % 4 == 0
+
             VideoGridCard(
                 video = video,
                 onClick = { onVideoClick(video) },
-                modifier = Modifier.focusProperties {
-                    if (isFirstInRow) left = sidebarVideosFocusRequester
-                }
+                modifier = Modifier
+                    .focusProperties {
+                        if (isFirstInRow) left = sidebarVideosFocusRequester
+                    }
             )
         }
     }
@@ -277,6 +291,7 @@ private fun VideoLibrarySuccessContent(
     // Footer strip — rescan action
     VideoLibraryFooter(
         onRescan = onRescan,
+        sidebarVideosFocusRequester = sidebarVideosFocusRequester,
         modifier = Modifier
             .fillMaxWidth()
             .padding(
@@ -306,7 +321,7 @@ private fun VideoGridCard(
         onClick = onClick,
         modifier = modifier
             .height(160.dp)
-            .onFocusChanged { isFocused = it.isFocused }
+            .onFocusChanged { isFocused = it.isFocused; android.util.Log.d("LumaFocus", "Card isFocused: $isFocused") }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             // Video thumbnail via Coil VideoFrameDecoder
@@ -412,12 +427,9 @@ private fun VideoFilterRow(
                     .focusRequester(allFilterFocusRequester)
                     .focusProperties {
                         left = sidebarVideosFocusRequester
-                        up = FocusRequester.Cancel
                     }
             } else {
-                Modifier.focusProperties {
-                    up = FocusRequester.Cancel
-                }
+                Modifier
             }
 
             LumaButton(
@@ -462,11 +474,13 @@ private fun VideoSortRow(
         )
         VideoSortOrder.entries.forEachIndexed { index, order ->
             val isActive = order == sortOrder
-            val buttonModifier = if (index == 0) {
-                Modifier.focusProperties { left = sidebarVideosFocusRequester }
-            } else {
-                Modifier
-            }
+            val buttonModifier = Modifier
+                .focusProperties {
+                    if (index == 0) {
+                        left = sidebarVideosFocusRequester
+                    }
+                }
+
             LumaButton(
                 onClick = { onSortChange(order) },
                 variant = if (isActive) LumaButtonVariant.Secondary else LumaButtonVariant.Ghost,
@@ -499,6 +513,7 @@ private fun VideoSortRow(
 @Composable
 private fun VideoLibraryFooter(
     onRescan: () -> Unit,
+    sidebarVideosFocusRequester: FocusRequester,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -517,6 +532,9 @@ private fun VideoLibraryFooter(
         LumaButton(
             onClick = onRescan,
             variant = LumaButtonVariant.Secondary,
+            modifier = Modifier.focusProperties {
+                left = sidebarVideosFocusRequester
+            },
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
@@ -725,3 +743,8 @@ private fun VideoLibraryPermissionContent(
         }
     }
 }
+
+
+
+
+

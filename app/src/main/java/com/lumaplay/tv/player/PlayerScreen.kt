@@ -1,7 +1,15 @@
 package com.lumaplay.tv.player
 
 import android.app.Activity
+import android.content.Context
+import android.graphics.PixelFormat
+import android.graphics.Region
+import android.graphics.drawable.ColorDrawable
+import android.util.Log
 import android.view.KeyEvent
+import android.view.SurfaceView
+import android.view.View
+import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
 import android.widget.FrameLayout
@@ -45,10 +53,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.DecoderReuseEvaluation
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -61,6 +75,35 @@ import com.lumaplay.tv.core.ui.components.LumaButton
 import com.lumaplay.tv.core.ui.components.LumaButtonVariant
 import com.lumaplay.tv.data.model.VideoItem
 import kotlinx.coroutines.delay
+
+/**
+ * Custom [PlayerView] that explicitly gathers transparent region for its underlying [SurfaceView].
+ *
+ * Prevents SurfaceFlinger / Hardware Composer from treating the video surface as occluded
+ * by parent windows or Compose layouts, enabling native DEVICE overlay composition.
+ */
+class LumaPlayerView(context: Context) : PlayerView(context) {
+
+    override fun gatherTransparentRegion(region: Region?): Boolean {
+        Log.i("LumaTransparent", "gatherTransparentRegion START: region=$region, sv=$videoSurfaceView")
+        var opaque = super.gatherTransparentRegion(region)
+        Log.i("LumaTransparent", "gatherTransparentRegion after super: region=$region, opaque=$opaque")
+        val sv = videoSurfaceView
+        if (sv != null && region != null && sv.width > 0 && sv.height > 0) {
+            val location = IntArray(2)
+            sv.getLocationInWindow(location)
+            val l = location[0]
+            val t = location[1]
+            val r = l + sv.width
+            val b = t + sv.height
+            region.op(l, t, r, b, Region.Op.UNION)
+            Log.i("LumaTransparent", "gatherTransparentRegion UNIONed [$l, $t, $r, $b], region now=$region")
+            opaque = false
+        }
+        Log.i("LumaTransparent", "gatherTransparentRegion END: region=$region, return opaque=$opaque")
+        return opaque
+    }
+}
 
 /**
  * Fullscreen Media3 ExoPlayer TV Screen.
@@ -107,17 +150,81 @@ fun PlayerScreen(
 
     // Single ExoPlayer instance managed across the screen lifecycle
     val player = remember(video.contentUri) {
-        ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(video.contentUri))
-            prepare()
-            playWhenReady = true
+        val renderersFactory = DefaultRenderersFactory(context).apply {
+            setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
+            setEnableDecoderFallback(true)
+            forceEnableMediaCodecAsynchronousQueueing()
         }
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+            .setUsage(C.USAGE_MEDIA)
+            .build()
+
+        ExoPlayer.Builder(context, renderersFactory)
+            .setAudioAttributes(audioAttributes, true)
+            .setHandleAudioBecomingNoisy(true)
+            .build().apply {
+                addAnalyticsListener(object : AnalyticsListener {
+                    override fun onVideoDecoderInitialized(
+                        eventTime: AnalyticsListener.EventTime,
+                        decoderName: String,
+                        initializedTimestampMs: Long,
+                        initializationDurationMs: Long
+                    ) {
+                        Log.i("LumaPlayPlayback", "Video decoder initialized: $decoderName in ${initializationDurationMs}ms")
+                    }
+
+                    override fun onVideoInputFormatChanged(
+                        eventTime: AnalyticsListener.EventTime,
+                        format: Format,
+                        decoderReuseEvaluation: DecoderReuseEvaluation?
+                    ) {
+                        Log.i(
+                            "LumaPlayPlayback",
+                            "Video input format: ${format.sampleMimeType}, ${format.width}x${format.height}@${format.frameRate}fps, colorInfo=${format.colorInfo}"
+                        )
+                    }
+
+                    override fun onDroppedVideoFrames(
+                        eventTime: AnalyticsListener.EventTime,
+                        droppedFrames: Int,
+                        elapsedMs: Long
+                    ) {
+                        Log.w("LumaPlayPlayback", "Dropped $droppedFrames video frames in ${elapsedMs}ms")
+                    }
+
+                    override fun onRenderedFirstFrame(
+                        eventTime: AnalyticsListener.EventTime,
+                        output: Any,
+                        renderTimeMs: Long
+                    ) {
+                        Log.i("LumaPlayPlayback", "Rendered first frame in ${renderTimeMs}ms")
+                        (context as? Activity)?.window?.decorView?.let { dv ->
+                            dv.post {
+                                dv.parent?.requestTransparentRegion(dv)
+                            }
+                        }
+                    }
+                })
+                setMediaItem(MediaItem.fromUri(video.contentUri))
+                prepare()
+                playWhenReady = true
+            }
     }
 
     // Attach lifecycle listeners and keep screen on
     DisposableEffect(player) {
-        val window = (context as? Activity)?.window
+        val activity = context as? Activity
+        val window = activity?.window
+        val decorView = window?.decorView
+        val originalBackground = decorView?.background
+        val originalFormat = window?.attributes?.format ?: PixelFormat.OPAQUE
+
         window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window?.setFormat(PixelFormat.TRANSLUCENT)
+        decorView?.background = null
+        window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+        decorView?.parent?.requestTransparentRegion(decorView)
 
         val listener = object : Player.Listener {
             override fun onIsPlayingChanged(playing: Boolean) {
@@ -131,6 +238,10 @@ fun PlayerScreen(
                 isBuffering = playbackState == Player.STATE_BUFFERING
                 if (playbackState == Player.STATE_READY) {
                     durationMs = player.duration.coerceAtLeast(0L)
+                    decorView?.post {
+                        decorView.parent?.requestTransparentRegion(decorView)
+                        logViewTree(decorView)
+                    }
                 }
             }
 
@@ -145,6 +256,10 @@ fun PlayerScreen(
 
         onDispose {
             window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            decorView?.background = originalBackground
+            window?.setBackgroundDrawable(originalBackground)
+            window?.setFormat(originalFormat)
+            decorView?.parent?.requestTransparentRegion(decorView)
             player.removeListener(listener)
             player.stop()
             player.clearMediaItems()
@@ -185,7 +300,6 @@ fun PlayerScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Black)
             .focusRequester(focusRequester)
             .focusable()
             .onPreviewKeyEvent { keyEvent ->
@@ -254,12 +368,35 @@ fun PlayerScreen(
         // --- 1. Video Surface ---
         AndroidView(
             factory = { ctx ->
-                PlayerView(ctx).apply {
+                LumaPlayerView(ctx).apply {
                     this.player = player
                     useController = false
                     resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
                     layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                    setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
+                    findViewById<View>(androidx.media3.ui.R.id.exo_shutter)?.let { shutter ->
+                        shutter.visibility = View.GONE
+                        (shutter.parent as? ViewGroup)?.removeView(shutter)
+                    }
+                    videoSurfaceView?.addOnLayoutChangeListener { v, left, top, right, bottom, _, _, _, _ ->
+                        if (right > left && bottom > top) {
+                            v.post {
+                                v.parent?.requestTransparentRegion(v)
+                                (ctx as? Activity)?.window?.decorView?.let { dv ->
+                                    dv.parent?.requestTransparentRegion(dv)
+                                }
+                            }
+                        }
+                    }
+                    post {
+                        (ctx as? Activity)?.window?.decorView?.let { dv ->
+                            dv.parent?.requestTransparentRegion(dv)
+                        }
+                    }
                 }
+            },
+            update = { playerView ->
+                playerView.player = player
             },
             modifier = Modifier.fillMaxSize()
         )
@@ -445,6 +582,16 @@ fun PlayerScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+private fun logViewTree(view: View, depth: Int = 0) {
+    val indent = "  ".repeat(depth)
+    Log.i("LumaViewTree", "$indent${view.javaClass.simpleName} id=${view.id} opaque=${view.isOpaque} bg=${view.background} vis=${view.visibility}")
+    if (view is ViewGroup) {
+        for (i in 0 until view.childCount) {
+            logViewTree(view.getChildAt(i), depth + 1)
         }
     }
 }

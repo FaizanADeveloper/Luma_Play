@@ -27,6 +27,9 @@
             android:name=".MainActivity"
             android:banner="@drawable/ic_tv_banner"
             android:exported="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:theme="@style/Theme.LumaPlay">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
