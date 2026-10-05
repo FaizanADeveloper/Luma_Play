@@ -22,10 +22,24 @@ object StoragePermissionHelper {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
 
+    val requiredAudioPermission: String
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
     fun hasStoragePermission(context: Context): Boolean {
         return ContextCompat.checkSelfPermission(
             context,
             requiredPermission
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun hasAudioPermission(context: Context): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            requiredAudioPermission
         ) == PackageManager.PERMISSION_GRANTED
     }
 }

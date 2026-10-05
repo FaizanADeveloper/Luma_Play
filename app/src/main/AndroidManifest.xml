@@ -9,11 +9,12 @@
         android:name="android.software.leanback"
         android:required="false" />
 
-    <!-- Storage permissions for local video scanning -->
+    <!-- Storage permissions for local video and audio scanning -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
     <application
         android:allowBackup="true"
