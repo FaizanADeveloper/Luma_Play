@@ -41,14 +41,18 @@ import com.lumaplay.tv.core.ui.shell.TvNavDestination
 import com.lumaplay.tv.core.ui.shell.TvSidebar
 import com.lumaplay.tv.core.ui.shell.TvTopBar
 import com.lumaplay.tv.core.util.StoragePermissionHelper
+import com.lumaplay.tv.data.repository.MediaStoreAudioRepository
 import com.lumaplay.tv.data.repository.MediaStoreVideoRepository
 import com.lumaplay.tv.navigation.Screen
 import com.lumaplay.tv.player.PlayerScreen
+import com.lumaplay.tv.player.audio.AudioPlayerController
 import com.lumaplay.tv.ui.home.HomeScreen
 import com.lumaplay.tv.ui.home.HomeUiState
 import com.lumaplay.tv.ui.home.HomeViewModel
 import com.lumaplay.tv.ui.details.VideoDetailsScreen
 import com.lumaplay.tv.ui.details.VideoDetailsViewModel
+import com.lumaplay.tv.ui.music.MusicPlayerViewModel
+import com.lumaplay.tv.ui.music.MusicScreen
 import com.lumaplay.tv.ui.splash.LumaLaunchScreen
 import com.lumaplay.tv.ui.videos.VideoLibraryScreen
 import com.lumaplay.tv.ui.videos.VideosViewModel
@@ -85,6 +89,18 @@ class MainActivity : ComponentActivity() {
 
     private val videoDetailsViewModel by viewModels<VideoDetailsViewModel>()
 
+    private val musicPlayerViewModel by viewModels<MusicPlayerViewModel> {
+        object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return MusicPlayerViewModel(
+                    audioRepository = MediaStoreAudioRepository(applicationContext),
+                    audioPlayerController = AudioPlayerController(applicationContext)
+                ) as T
+            }
+        }
+    }
+
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,12 +128,15 @@ class MainActivity : ComponentActivity() {
                 val sidebarVideosFocusRequester = remember { FocusRequester() }
                 val videoLibraryFocusRequester = remember { FocusRequester() }
                 val videoDetailsPlayFocusRequester = remember { FocusRequester() }
+                val sidebarMusicFocusRequester = remember { FocusRequester() }
+                val musicContentFocusRequester = remember { FocusRequester() }
 
                 val permissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { isGranted ->
                     homeViewModel.onPermissionResult(isGranted)
                     if (isGranted) videosViewModel.onPermissionResult(isGranted)
+                    musicPlayerViewModel.onPermissionChecked(isGranted)
                 }
 
                 // Check permission on initial launch
@@ -125,10 +144,16 @@ class MainActivity : ComponentActivity() {
                     val hasPermission = StoragePermissionHelper.hasStoragePermission(this@MainActivity)
                     homeViewModel.onPermissionChecked(hasPermission)
                     videosViewModel.onPermissionChecked(hasPermission)
+                    musicPlayerViewModel.onPermissionChecked(hasPermission)
                 }
 
                 // Handle Back press on Videos screen to return to Home dashboard
                 BackHandler(enabled = currentScreen is Screen.Videos) {
+                    currentScreen = Screen.Home
+                }
+
+                // Handle Back press on Music screen to return to Home dashboard
+                BackHandler(enabled = currentScreen is Screen.Music) {
                     currentScreen = Screen.Home
                 }
 
@@ -149,6 +174,7 @@ class MainActivity : ComponentActivity() {
                             val hasPermission = StoragePermissionHelper.hasStoragePermission(this@MainActivity)
                             homeViewModel.onPermissionChecked(hasPermission)
                             videosViewModel.onPermissionChecked(hasPermission)
+                            musicPlayerViewModel.onPermissionChecked(hasPermission)
                         }
                     }
                     lifecycle.addObserver(observer)
@@ -162,6 +188,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(currentScreen) {
                     when (currentScreen) {
                         is Screen.Videos -> selectedDestination = TvNavDestination.Videos
+                        is Screen.Music -> selectedDestination = TvNavDestination.Music
                         is Screen.Home -> selectedDestination = TvNavDestination.Home
                         is Screen.VideoDetail -> {
                             selectedDestination = if (detailsOriginScreen is Screen.Videos) {
@@ -202,12 +229,14 @@ class MainActivity : ComponentActivity() {
                                         when (destination) {
                                             TvNavDestination.Home -> currentScreen = Screen.Home
                                             TvNavDestination.Videos -> currentScreen = Screen.Videos
-                                            else -> { /* B2-M3…M5 destinations — coming in later milestones */ }
+                                            TvNavDestination.Music -> currentScreen = Screen.Music
+                                            else -> { /* B2-M4…M5 destinations — coming in later milestones */ }
                                         }
                                     },
                                     dashboardFocusRequester = contentContainerFocusRequester,
                                     homeFocusRequester = sidebarHomeFocusRequester,
-                                    videosFocusRequester = sidebarVideosFocusRequester
+                                    videosFocusRequester = sidebarVideosFocusRequester,
+                                    musicFocusRequester = sidebarMusicFocusRequester
                                 )
 
                                 Column(
@@ -220,6 +249,8 @@ class MainActivity : ComponentActivity() {
                                                 heroPlayButtonRequester
                                             } else if (currentScreen is Screen.VideoDetail) {
                                                 videoDetailsPlayFocusRequester
+                                            } else if (currentScreen is Screen.Music) {
+                                                musicContentFocusRequester
                                             } else {
                                                 FocusRequester.Default
                                             }
@@ -266,6 +297,14 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
 
+                                        is Screen.Music -> {
+                                            MusicScreen(
+                                                viewModel = musicPlayerViewModel,
+                                                sidebarMusicFocusRequester = sidebarMusicFocusRequester,
+                                                contentFocusRequester = musicContentFocusRequester
+                                            )
+                                        }
+
                                         is Screen.VideoDetail -> {
                                             val detail = currentScreen as Screen.VideoDetail
                                             VideoDetailsScreen(
@@ -289,7 +328,7 @@ class MainActivity : ComponentActivity() {
                                         }
 
                                         else -> {
-                                            // Other destinations (Music, Folders, Search) — B2-M3 to M5
+                                            // Other destinations (Folders, Search) — B2-M4 to M5
                                             HomeScreen(
                                                 uiState = uiState,
                                                 onScanClick = { homeViewModel.scanVideos() },

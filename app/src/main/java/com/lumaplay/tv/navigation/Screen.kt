@@ -12,6 +12,9 @@ sealed interface Screen {
     /** The full video library browse screen. */
     data object Videos : Screen
 
+    /** The local music library and player screen. */
+    data object Music : Screen
+
     /**
      * Video details screen for a single indexed video.
      * Wired to the player in B2-M1; a dedicated details screen

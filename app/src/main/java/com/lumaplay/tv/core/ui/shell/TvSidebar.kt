@@ -95,7 +95,8 @@ fun TvSidebar(
     modifier: Modifier = Modifier,
     dashboardFocusRequester: FocusRequester? = null,
     homeFocusRequester: FocusRequester? = null,
-    videosFocusRequester: FocusRequester? = null
+    videosFocusRequester: FocusRequester? = null,
+    musicFocusRequester: FocusRequester? = null
 ) {
     var isSidebarFocused by remember { mutableStateOf(false) }
 
@@ -167,6 +168,7 @@ fun TvSidebar(
                         val itemFocusModifier = when (destination) {
                             TvNavDestination.Home -> if (homeFocusRequester != null) Modifier.focusRequester(homeFocusRequester) else Modifier
                             TvNavDestination.Videos -> if (videosFocusRequester != null) Modifier.focusRequester(videosFocusRequester) else Modifier
+                            TvNavDestination.Music -> if (musicFocusRequester != null) Modifier.focusRequester(musicFocusRequester) else Modifier
                             else -> Modifier
                         }
 
