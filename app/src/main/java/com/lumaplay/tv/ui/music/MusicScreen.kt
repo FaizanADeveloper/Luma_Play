@@ -41,7 +41,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.tv.material3.Border
+import androidx.tv.material3.Card
+import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Glow
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
@@ -51,7 +57,6 @@ import com.lumaplay.tv.core.ui.components.LumaBadge
 import com.lumaplay.tv.core.ui.components.LumaBadgeVariant
 import com.lumaplay.tv.core.ui.components.LumaButton
 import com.lumaplay.tv.core.ui.components.LumaButtonVariant
-import com.lumaplay.tv.core.ui.components.LumaCard
 import com.lumaplay.tv.data.model.AudioItem
 import com.lumaplay.tv.player.audio.AudioPlayerState
 import com.lumaplay.tv.player.audio.AudioRepeatMode
@@ -591,6 +596,7 @@ private fun TrackListPanel(
         LazyColumn(
             state = listState,
             verticalArrangement = Arrangement.spacedBy(6.dp),
+            contentPadding = PaddingValues(vertical = 4.dp),
             modifier = Modifier.fillMaxSize()
         ) {
             itemsIndexed(
@@ -611,8 +617,9 @@ private fun TrackListPanel(
                         else Modifier
                     )
 
-                LumaCard(
+                TrackRowCard(
                     onClick = { onTrackClick(track) },
+                    isActiveTrack = isActiveTrack,
                     modifier = rowFocusModifier
                 ) {
                     Row(
@@ -694,6 +701,59 @@ private fun TrackListPanel(
             }
         }
     }
+}
+
+/**
+ * Dedicated 10-foot TV track row card tailored for the Music queue list.
+ *
+ * Implements Google Stitch specifications for list rows:
+ * - 8dp corner radius ([LumaTheme.shapes.medium], Stitch rounded-lg).
+ * - Fixed 1.0x scale (no viewport clipping overflow).
+ * - No outer glow ([Glow.None]) to prevent horizontal edge scissor artifacts in [LazyColumn].
+ * - Subtle 1.5dp Electric Cyan focus border for clear D-pad feedback.
+ * - Distinct surface levels between resting, active, and focused states.
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun TrackRowCard(
+    onClick: () -> Unit,
+    isActiveTrack: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val colors = LumaTheme.colors
+    val shape = LumaTheme.shapes.medium
+
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        shape = CardDefaults.shape(shape = shape),
+        colors = CardDefaults.colors(
+            containerColor = if (isActiveTrack) colors.surfaceContainerHigh else colors.surfaceCard,
+            contentColor = colors.textPrimary,
+            focusedContainerColor = if (isActiveTrack) colors.surfaceContainerHighest else colors.surfaceContainerHigh,
+            focusedContentColor = colors.textPrimary,
+            pressedContainerColor = colors.surfaceContainerHighest,
+            pressedContentColor = colors.textPrimary
+        ),
+        scale = CardDefaults.scale(
+            scale = 1.0f,
+            focusedScale = 1.0f,
+            pressedScale = 1.0f
+        ),
+        border = CardDefaults.border(
+            focusedBorder = Border(
+                border = BorderStroke(width = 1.5.dp, color = colors.cyan),
+                shape = shape
+            )
+        ),
+        glow = CardDefaults.glow(
+            glow = Glow.None,
+            focusedGlow = Glow.None,
+            pressedGlow = Glow.None
+        ),
+        content = content
+    )
 }
 
 // -----------------------------------------------------------------------------
