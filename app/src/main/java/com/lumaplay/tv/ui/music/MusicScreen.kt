@@ -1,8 +1,10 @@
 package com.lumaplay.tv.ui.music
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,12 +14,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -56,9 +61,9 @@ import java.util.Locale
  * Foundational 10-foot Android TV Music Library & Player Screen.
  *
  * Implements the approved Google Stitch dual-panel reference:
- * - Left panel: Now Playing card with artwork, track metadata, timeline scrubber, and TV transport controls.
+ * - Left panel: Now Playing card with artwork, track metadata, timeline scrubber, and 5 circular TV transport controls.
  * - Right panel: Accessible track list with genuine metadata and playback indicator.
- * - Fully operable via D-pad remote with non-blocking lateral transitions.
+ * - Fully operable via D-pad remote with deterministic focus routing.
  *
  * @param viewModel Activity-scoped [MusicPlayerViewModel] instance.
  * @param sidebarMusicFocusRequester Shared requester used to route D-pad LEFT back to the sidebar Music item.
@@ -74,22 +79,17 @@ fun MusicScreen(
     val libraryState by viewModel.libraryState.collectAsState()
     val playbackState by viewModel.playbackState.collectAsState()
 
-    val playButtonFocusRequester = contentFocusRequester ?: remember { FocusRequester() }
+    val playButtonFocusRequester = remember { FocusRequester() }
     val firstTrackFocusRequester = remember { FocusRequester() }
+    val contentEntryRequester = contentFocusRequester ?: remember { FocusRequester() }
 
-    // Direct focus handling: prioritize play button if playing, or first track if idle
-    LaunchedEffect(libraryState, playbackState.isPlaying) {
-        when (val state = libraryState) {
-            is MusicLibraryUiState.Success -> {
-                if (state.tracks.isNotEmpty()) {
-                    val target = if (playbackState.isPlaying) playButtonFocusRequester else firstTrackFocusRequester
-                    runCatching { target.requestFocus() }
-                }
+    // Direct initial focus handling when library is loaded
+    LaunchedEffect(libraryState) {
+        if (libraryState is MusicLibraryUiState.Success) {
+            // When library first becomes available while idle, request focus to the first track
+            if (playbackState.currentTrack == null) {
+                runCatching { firstTrackFocusRequester.requestFocus() }
             }
-            is MusicLibraryUiState.Empty, is MusicLibraryUiState.Error -> {
-                runCatching { playButtonFocusRequester.requestFocus() }
-            }
-            else -> {}
         }
     }
 
@@ -97,6 +97,14 @@ fun MusicScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(LumaTheme.colors.background)
+            .focusRequester(contentEntryRequester)
+            .focusRestorer {
+                if (playbackState.currentTrack != null) {
+                    playButtonFocusRequester
+                } else {
+                    firstTrackFocusRequester
+                }
+            }
     ) {
         when (val state = libraryState) {
             is MusicLibraryUiState.Loading -> {
@@ -107,7 +115,7 @@ fun MusicScreen(
                 MusicEmptyContent(
                     onScan = { viewModel.scanMusic() },
                     sidebarMusicFocusRequester = sidebarMusicFocusRequester,
-                    actionFocusRequester = playButtonFocusRequester
+                    actionFocusRequester = firstTrackFocusRequester
                 )
             }
 
@@ -116,7 +124,7 @@ fun MusicScreen(
                     message = state.message,
                     onRetry = { viewModel.scanMusic() },
                     sidebarMusicFocusRequester = sidebarMusicFocusRequester,
-                    actionFocusRequester = playButtonFocusRequester
+                    actionFocusRequester = firstTrackFocusRequester
                 )
             }
 
@@ -161,7 +169,7 @@ private fun MusicDualPanelContent(
             ),
         horizontalArrangement = Arrangement.spacedBy(spacing.gutter)
     ) {
-        // --- Left Panel: Now Playing Focus Card ---
+        // --- Left Panel: Now Playing Focus Card (42% width) ---
         NowPlayingPanel(
             playbackState = playbackState,
             viewModel = viewModel,
@@ -173,7 +181,7 @@ private fun MusicDualPanelContent(
                 .fillMaxHeight()
         )
 
-        // --- Right Panel: Track List ---
+        // --- Right Panel: Track List (58% width) ---
         TrackListPanel(
             tracks = tracks,
             playbackState = playbackState,
@@ -205,6 +213,11 @@ private fun NowPlayingPanel(
     val colors = LumaTheme.colors
     val spacing = LumaTheme.spacing
 
+    val shuffleButtonFocusRequester = remember { FocusRequester() }
+    val prevButtonFocusRequester = remember { FocusRequester() }
+    val nextButtonFocusRequester = remember { FocusRequester() }
+    val repeatButtonFocusRequester = remember { FocusRequester() }
+
     Column(
         modifier = modifier
             .clip(LumaTheme.shapes.large)
@@ -214,11 +227,11 @@ private fun NowPlayingPanel(
     ) {
         // Top section: Artwork + Metadata + Timeline Scrubber
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Artwork Box (1:1 aspect ratio, max 240dp)
+            // Artwork Box (1:1 aspect ratio square, max 200dp, centered horizontally)
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
+                    .size(200.dp)
+                    .align(Alignment.CenterHorizontally)
                     .clip(LumaTheme.shapes.medium)
                     .background(colors.surfaceContainerHighest),
                 contentAlignment = Alignment.Center
@@ -247,7 +260,7 @@ private fun NowPlayingPanel(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_nav_music),
                             contentDescription = "Music",
-                            modifier = Modifier.size(64.dp),
+                            modifier = Modifier.size(56.dp),
                             tint = colors.cyan.copy(alpha = 0.6f)
                         )
                     }
@@ -269,13 +282,24 @@ private fun NowPlayingPanel(
             Spacer(modifier = Modifier.height(14.dp))
 
             // Track metadata
-            Text(
-                text = currentTrack?.cleanTitle ?: "No Track Selected",
-                style = LumaTheme.typography.headlineMd,
-                color = colors.textPrimary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_nav_music),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = colors.cyan
+                )
+                Text(
+                    text = currentTrack?.cleanTitle ?: "No Track Selected",
+                    style = LumaTheme.typography.headlineMd,
+                    color = colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -288,31 +312,65 @@ private fun NowPlayingPanel(
             } else {
                 "Select a track from the library to start playback"
             }
-            Text(
-                text = subtitle,
-                style = LumaTheme.typography.bodyMd,
-                color = colors.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = subtitle,
+                    style = LumaTheme.typography.bodyMd,
+                    color = colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                if (currentTrack != null && playbackState.queue.isNotEmpty()) {
+                    val queuePositionText = "Track ${playbackState.queueIndex + 1} of ${playbackState.queue.size}"
+                    Text(
+                        text = queuePositionText,
+                        style = LumaTheme.typography.labelSm,
+                        color = colors.textMuted
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Timeline Scrubber Bar
+            // Timeline Scrubber Bar with subtle progress thumb
             Column(modifier = Modifier.fillMaxWidth()) {
-                Box(
+                BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(LumaTheme.shapes.pill)
-                        .background(colors.surfaceContainerHighest)
+                        .height(14.dp),
+                    contentAlignment = Alignment.CenterStart
                 ) {
+                    // Track background line
                     Box(
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(playbackState.progress)
+                            .fillMaxWidth()
+                            .height(4.dp)
+                            .clip(LumaTheme.shapes.pill)
+                            .background(colors.surfaceContainerHighest)
+                    )
+                    // Filled cyan progress line
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(playbackState.progress.coerceIn(0f, 1f))
+                            .height(4.dp)
                             .clip(LumaTheme.shapes.pill)
                             .background(colors.cyan)
+                    )
+                    // Subtle circular thumb with cyan border
+                    val thumbOffset = maxWidth * playbackState.progress.coerceIn(0f, 1f) - 6.dp
+                    Box(
+                        modifier = Modifier
+                            .offset(x = thumbOffset.coerceAtLeast(0.dp))
+                            .size(12.dp)
+                            .clip(CircleShape)
+                            .background(colors.textPrimary)
+                            .border(1.5.dp, colors.cyan, CircleShape)
                     )
                 }
 
@@ -336,7 +394,7 @@ private fun NowPlayingPanel(
             }
         }
 
-        // Bottom section: TV Transport Controls Row
+        // Bottom section: TV Transport Controls Row (5 circular icon buttons matching Stitch)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -344,19 +402,27 @@ private fun NowPlayingPanel(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 1. Shuffle Button (leftmost: D-pad LEFT routes back to TvSidebar Music item)
+            // 1. Shuffle Button
             LumaButton(
                 onClick = { viewModel.toggleShuffle() },
                 variant = if (playbackState.isShuffled) LumaButtonVariant.Secondary else LumaButtonVariant.Ghost,
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                modifier = Modifier.focusProperties {
-                    left = sidebarMusicFocusRequester
-                }
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier
+                    .size(44.dp)
+                    .focusRequester(shuffleButtonFocusRequester)
+                    .focusProperties {
+                        left = sidebarMusicFocusRequester
+                        right = prevButtonFocusRequester
+                        up = firstTrackFocusRequester
+                        down = FocusRequester.Cancel
+                    }
             ) {
-                Text(
-                    text = "🔀",
-                    style = LumaTheme.typography.labelMd,
-                    color = if (playbackState.isShuffled) colors.cyan else colors.textSecondary
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_action_shuffle),
+                    contentDescription = "Shuffle",
+                    modifier = Modifier.size(20.dp),
+                    tint = if (playbackState.isShuffled) colors.cyan else colors.textSecondary
                 )
             }
 
@@ -364,12 +430,23 @@ private fun NowPlayingPanel(
             LumaButton(
                 onClick = { viewModel.previous() },
                 variant = LumaButtonVariant.Ghost,
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier
+                    .size(44.dp)
+                    .focusRequester(prevButtonFocusRequester)
+                    .focusProperties {
+                        left = shuffleButtonFocusRequester
+                        right = playButtonFocusRequester
+                        up = firstTrackFocusRequester
+                        down = FocusRequester.Cancel
+                    }
             ) {
-                Text(
-                    text = "⏮",
-                    style = LumaTheme.typography.labelMd,
-                    color = colors.textPrimary
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_action_skip_previous),
+                    contentDescription = "Previous",
+                    modifier = Modifier.size(20.dp),
+                    tint = colors.textPrimary
                 )
             }
 
@@ -377,13 +454,25 @@ private fun NowPlayingPanel(
             LumaButton(
                 onClick = { viewModel.togglePlayPause() },
                 variant = LumaButtonVariant.Primary,
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                modifier = Modifier.focusRequester(playButtonFocusRequester)
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier
+                    .size(52.dp)
+                    .focusRequester(playButtonFocusRequester)
+                    .focusProperties {
+                        left = prevButtonFocusRequester
+                        right = nextButtonFocusRequester
+                        up = firstTrackFocusRequester
+                        down = FocusRequester.Cancel
+                    }
             ) {
-                Text(
-                    text = if (playbackState.isPlaying) "⏸  PAUSE" else "▶  PLAY",
-                    style = LumaTheme.typography.labelLg,
-                    color = colors.surfaceContainerLowest
+                Icon(
+                    painter = painterResource(
+                        id = if (playbackState.isPlaying) R.drawable.ic_action_pause else R.drawable.ic_action_play
+                    ),
+                    contentDescription = if (playbackState.isPlaying) "Pause" else "Play",
+                    modifier = Modifier.size(24.dp),
+                    tint = colors.surfaceContainerLowest
                 )
             }
 
@@ -391,33 +480,53 @@ private fun NowPlayingPanel(
             LumaButton(
                 onClick = { viewModel.next() },
                 variant = LumaButtonVariant.Ghost,
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier
+                    .size(44.dp)
+                    .focusRequester(nextButtonFocusRequester)
+                    .focusProperties {
+                        left = playButtonFocusRequester
+                        right = repeatButtonFocusRequester
+                        up = firstTrackFocusRequester
+                        down = FocusRequester.Cancel
+                    }
             ) {
-                Text(
-                    text = "⏭",
-                    style = LumaTheme.typography.labelMd,
-                    color = colors.textPrimary
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_action_skip_next),
+                    contentDescription = "Next",
+                    modifier = Modifier.size(20.dp),
+                    tint = colors.textPrimary
                 )
             }
 
             // 5. Repeat Button (rightmost: D-pad RIGHT targets the track list)
-            val repeatLabel = when (playbackState.repeatMode) {
-                AudioRepeatMode.ONE -> "🔂 1"
-                AudioRepeatMode.ALL -> "🔁 All"
-                AudioRepeatMode.OFF -> "🔁 Off"
+            val isRepeatActive = playbackState.repeatMode != AudioRepeatMode.OFF
+            val repeatIconId = if (playbackState.repeatMode == AudioRepeatMode.ONE) {
+                R.drawable.ic_action_repeat_one
+            } else {
+                R.drawable.ic_action_repeat
             }
             LumaButton(
                 onClick = { viewModel.cycleRepeatMode() },
-                variant = if (playbackState.repeatMode != AudioRepeatMode.OFF) LumaButtonVariant.Secondary else LumaButtonVariant.Ghost,
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                modifier = Modifier.focusProperties {
-                    right = firstTrackFocusRequester
-                }
+                variant = if (isRepeatActive) LumaButtonVariant.Secondary else LumaButtonVariant.Ghost,
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier
+                    .size(44.dp)
+                    .focusRequester(repeatButtonFocusRequester)
+                    .focusProperties {
+                        left = nextButtonFocusRequester
+                        right = firstTrackFocusRequester
+                        up = firstTrackFocusRequester
+                        down = FocusRequester.Cancel
+                    }
             ) {
-                Text(
-                    text = repeatLabel,
-                    style = LumaTheme.typography.labelSm,
-                    color = if (playbackState.repeatMode != AudioRepeatMode.OFF) colors.cyan else colors.textSecondary
+                Icon(
+                    painter = painterResource(id = repeatIconId),
+                    contentDescription = "Repeat",
+                    modifier = Modifier.size(20.dp),
+                    tint = if (isRepeatActive) colors.cyan else colors.textSecondary
                 )
             }
         }
@@ -460,6 +569,12 @@ private fun TrackListPanel(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_nav_music),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = colors.cyan
+                )
                 Text(
                     text = "All Songs",
                     style = LumaTheme.typography.headlineMd,
@@ -487,6 +602,9 @@ private fun TrackListPanel(
                     .fillMaxWidth()
                     .focusProperties {
                         left = playButtonFocusRequester
+                        if (index == 0) {
+                            up = FocusRequester.Cancel
+                        }
                     }
                     .then(
                         if (index == 0) Modifier.focusRequester(firstTrackFocusRequester)
@@ -508,24 +626,35 @@ private fun TrackListPanel(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.weight(1f)
                         ) {
-                            // Track number or active playing symbol
+                            // Active playing indicator or Track number
                             if (isActiveTrack) {
-                                Text(
-                                    text = if (playbackState.isPlaying) "▶" else "⏸",
-                                    style = LumaTheme.typography.labelMd,
-                                    color = colors.cyan,
-                                    modifier = Modifier.width(32.dp)
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(colors.cyan.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(
+                                            id = if (playbackState.isPlaying) R.drawable.ic_action_volume_up else R.drawable.ic_action_pause
+                                        ),
+                                        contentDescription = if (playbackState.isPlaying) "Playing" else "Paused",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = colors.cyan
+                                    )
+                                }
                             } else {
                                 Text(
                                     text = String.format(Locale.US, "%02d", index + 1),
                                     style = LumaTheme.typography.labelMd,
                                     color = colors.textMuted,
-                                    modifier = Modifier.width(32.dp)
+                                    modifier = Modifier.width(28.dp),
+                                    textAlign = TextAlign.Center
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
