@@ -197,7 +197,10 @@ class MainActivity : ComponentActivity() {
                                 TvNavDestination.Home
                             }
                         }
-                        else -> { /* Player is fullscreen — sidebar hidden */ }
+                        is Screen.Player -> {
+                            // Defensive coordination: ensure music playback is paused during video playback
+                            musicPlayerViewModel.pause()
+                        }
                     }
                 }
 
@@ -268,6 +271,7 @@ class MainActivity : ComponentActivity() {
                                                     permissionLauncher.launch(StoragePermissionHelper.requiredPermission)
                                                 },
                                                 onVideoClick = { video ->
+                                                    musicPlayerViewModel.pause()
                                                     previousScreenBeforePlayer = Screen.Home
                                                     currentScreen = Screen.Player(video)
                                                 },
@@ -311,10 +315,12 @@ class MainActivity : ComponentActivity() {
                                                 video = detail.video,
                                                 detailsViewModel = videoDetailsViewModel,
                                                 onPlay = { videoToPlay ->
+                                                    musicPlayerViewModel.pause()
                                                     previousScreenBeforePlayer = currentScreen
                                                     currentScreen = Screen.Player(videoToPlay)
                                                 },
                                                 onPlayFromBeginning = { videoToPlay ->
+                                                    musicPlayerViewModel.pause()
                                                     previousScreenBeforePlayer = currentScreen
                                                     currentScreen = Screen.Player(videoToPlay.copy(playbackPositionMs = 0L))
                                                 },
@@ -336,6 +342,7 @@ class MainActivity : ComponentActivity() {
                                                     permissionLauncher.launch(StoragePermissionHelper.requiredPermission)
                                                 },
                                                 onVideoClick = { video ->
+                                                    musicPlayerViewModel.pause()
                                                     currentScreen = Screen.Player(video)
                                                 },
                                                 playButtonFocusRequester = heroPlayButtonRequester,

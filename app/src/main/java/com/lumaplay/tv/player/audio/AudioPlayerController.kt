@@ -1,13 +1,20 @@
 package com.lumaplay.tv.player.audio
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaSession
+import androidx.media3.session.SessionResult
+import androidx.media3.session.SessionToken
+import com.lumaplay.tv.MainActivity
 import com.lumaplay.tv.data.model.AudioItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +33,8 @@ import kotlinx.coroutines.launch
  * Headless audio playback engine and queue controller.
  *
  * Coordinates a dedicated Media3 [ExoPlayer] instance with [PlaybackQueue],
- * exposing an observable [StateFlow] of [AudioPlayerState] to the presentation layer.
+ * exposing an observable [StateFlow] of [AudioPlayerState] to the presentation layer
+ * and publishing an active [MediaSession] for system and 10-foot media controls.
  *
  * Architectural Invariants:
  * - [PlaybackQueue] is the sole source of truth for queue ordering, index, shuffle, and repeat.
@@ -62,6 +70,122 @@ class AudioPlayerController(
         .setAudioAttributes(audioAttributes, /* handleAudioFocus = */ true)
         .setHandleAudioBecomingNoisy(true)
         .build()
+
+    private val sessionActivityPendingIntent: PendingIntent = PendingIntent.getActivity(
+        appContext,
+        0,
+        Intent(appContext, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        },
+        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
+    private val sessionPlayer: Player = object : ForwardingPlayer(exoPlayer) {
+        override fun getAvailableCommands(): Player.Commands {
+            return super.getAvailableCommands().buildUpon()
+                .add(Player.COMMAND_PLAY_PAUSE)
+                .add(Player.COMMAND_PREPARE)
+                .add(Player.COMMAND_STOP)
+                .add(Player.COMMAND_SEEK_TO_NEXT)
+                .add(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                .add(Player.COMMAND_SEEK_TO_PREVIOUS)
+                .add(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+                .add(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
+                .build()
+        }
+
+        override fun isCommandAvailable(command: Int): Boolean {
+            return availableCommands.contains(command)
+        }
+
+        override fun play() {
+            this@AudioPlayerController.play()
+        }
+
+        override fun pause() {
+            this@AudioPlayerController.pause()
+        }
+
+        override fun setPlayWhenReady(playWhenReady: Boolean) {
+            if (playWhenReady) {
+                this@AudioPlayerController.play()
+            } else {
+                this@AudioPlayerController.pause()
+            }
+        }
+
+        override fun seekTo(positionMs: Long) {
+            this@AudioPlayerController.seekTo(positionMs)
+        }
+
+        override fun seekToNext() {
+            this@AudioPlayerController.next()
+        }
+
+        override fun seekToNextMediaItem() {
+            this@AudioPlayerController.next()
+        }
+
+        override fun seekToPrevious() {
+            this@AudioPlayerController.previous()
+        }
+
+        override fun seekToPreviousMediaItem() {
+            this@AudioPlayerController.previous()
+        }
+
+        override fun hasNextMediaItem(): Boolean {
+            return playbackQueue.hasNext
+        }
+
+        override fun hasPreviousMediaItem(): Boolean {
+            return playbackQueue.hasPrevious(exoPlayer.currentPosition)
+        }
+    }
+
+    internal val sessionCallback = object : MediaSession.Callback {
+        override fun onConnect(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo
+        ): MediaSession.ConnectionResult {
+            val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
+                .build()
+            val playerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
+                .add(Player.COMMAND_PLAY_PAUSE)
+                .add(Player.COMMAND_PREPARE)
+                .add(Player.COMMAND_STOP)
+                .add(Player.COMMAND_SEEK_TO_NEXT)
+                .add(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                .add(Player.COMMAND_SEEK_TO_PREVIOUS)
+                .add(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+                .add(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
+                .build()
+            return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
+                .setAvailableSessionCommands(sessionCommands)
+                .setAvailablePlayerCommands(playerCommands)
+                .build()
+        }
+
+        override fun onPlayerCommandRequest(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            playerCommand: Int
+        ): Int {
+            return SessionResult.RESULT_SUCCESS
+        }
+    }
+
+    internal val mediaSession: MediaSession = MediaSession.Builder(appContext, sessionPlayer)
+        .setId("LumaPlayAudioSession")
+        .setSessionActivity(sessionActivityPendingIntent)
+        .setCallback(sessionCallback)
+        .build()
+
+    /**
+     * MediaSession token for system media controls, TV platform integration, and testing.
+     */
+    val sessionToken: SessionToken
+        get() = mediaSession.token
 
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -99,6 +223,15 @@ class AudioPlayerController(
                     errorMessage = errorMsg
                 )
             }
+        }
+
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int
+        ) {
+            if (isReleased) return
+            updatePlaybackState()
         }
     }
 
@@ -282,6 +415,7 @@ class AudioPlayerController(
         isReleased = true
         stopPositionPolling()
         controllerScope.cancel()
+        mediaSession.release()
         exoPlayer.removeListener(playerListener)
         exoPlayer.stop()
         exoPlayer.clearMediaItems()
@@ -440,30 +574,37 @@ class AudioPlayerController(
         positionPollingJob = null
     }
 
-    private fun AudioItem.toMediaItem(): MediaItem {
-        val cleanArtist = artist?.takeIf {
-            it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true)
-        }
-        val cleanAlbum = album?.takeIf {
-            it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true)
-        }
+}
 
-        val metadata = MediaMetadata.Builder()
-            .setTitle(cleanTitle)
-            .apply {
-                cleanArtist?.let { setArtist(it) }
-                cleanAlbum?.let { setAlbumTitle(it) }
-                artworkUri?.let { setArtworkUri(it) }
-            }
-            .build()
-
-        return MediaItem.Builder()
-            .setMediaId(id.toString())
-            .setUri(contentUri)
-            .apply {
-                mimeType?.let { setMimeType(it) }
-            }
-            .setMediaMetadata(metadata)
-            .build()
+/**
+ * Converts an [AudioItem] into a Media3 [MediaItem] with truthful metadata,
+ * omitting unknown or placeholder tags rather than fabricating them.
+ */
+internal fun AudioItem.toMediaItem(): MediaItem {
+    val cleanArtist = artist?.takeIf {
+        it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true)
     }
+    val cleanAlbum = album?.takeIf {
+        it.isNotBlank() && !it.equals("<unknown>", ignoreCase = true)
+    }
+
+    val metadata = MediaMetadata.Builder()
+        .setTitle(cleanTitle)
+        .apply {
+            cleanArtist?.let { setArtist(it) }
+            cleanAlbum?.let { setAlbumTitle(it) }
+            artworkUri?.let { setArtworkUri(it) }
+            trackNumber?.let { setTrackNumber(it) }
+            year?.let { setReleaseYear(it) }
+        }
+        .build()
+
+    return MediaItem.Builder()
+        .setMediaId(id.toString())
+        .setUri(contentUri)
+        .apply {
+            mimeType?.let { setMimeType(it) }
+        }
+        .setMediaMetadata(metadata)
+        .build()
 }
