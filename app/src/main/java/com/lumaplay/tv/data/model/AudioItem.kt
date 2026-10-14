@@ -79,10 +79,12 @@ data class AudioItem(
     val artworkUri: Uri?
         get() = albumId?.let { id ->
             if (id > 0) {
-                ContentUris.withAppendedId(
-                    Uri.parse("content://media/external/audio/albumart"),
-                    id
-                )
+                runCatching {
+                    ContentUris.withAppendedId(
+                        Uri.parse("content://media/external/audio/albumart"),
+                        id
+                    )
+                }.getOrNull()
             } else null
         }
 

@@ -9,6 +9,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import com.lumaplay.tv.data.model.AlbumItem
+import com.lumaplay.tv.data.model.ArtistItem
 import com.lumaplay.tv.data.model.AudioItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -38,33 +39,8 @@ class MediaStoreAudioRepository(
         private val SUPPORTED_AUDIO_EXTENSIONS = setOf(
             "mp3", "flac", "aac", "m4a", "wav", "ogg", "opus", "wma"
         )
-    }
 
-    override suspend fun getAudioTracks(): Result<List<AudioItem>> = withContext(Dispatchers.IO) {
-        runCatching {
-            // Deduplicated map keyed by canonical physical path (or synthetic key if path unavailable)
-            val reconciledAudio = LinkedHashMap<String, AudioItem>()
-
-            // -------------------------------------------------------------
-            // SOURCE 1: MediaStore Query (Relaxed, Incomplete-Row Aware)
-            // -------------------------------------------------------------
-            queryMediaStore(reconciledAudio)
-
-            // -------------------------------------------------------------
-            // SOURCE 2: Direct Filesystem Discovery (Authoritative Fallback)
-            // -------------------------------------------------------------
-            scanPublicFilesystem(reconciledAudio)
-
-            // Return sorted by dateAdded DESC (matching established LumaPlay sorting contract)
-            reconciledAudio.values.sortedByDescending { it.dateAdded }
-        }
-    }
-
-    override suspend fun getAlbums(): Result<List<AlbumItem>> = withContext(Dispatchers.IO) {
-        runCatching {
-            val tracksResult = getAudioTracks()
-            val tracks = tracksResult.getOrThrow()
-
+        internal fun groupTracksToAlbums(tracks: List<AudioItem>): List<AlbumItem> {
             // Group tracks by album identity:
             // Prefer MediaStore albumId when valid; fallback to normalized album + artist key
             val grouped = tracks.groupBy { track ->
@@ -75,7 +51,7 @@ class MediaStoreAudioRepository(
                 }
             }
 
-            grouped.map { (groupKey, albumTracks) ->
+            return grouped.map { (groupKey, albumTracks) ->
                 // Sort tracks by track sequence number ascending (nulls last), then title
                 val sortedTracks = albumTracks.sortedWith(
                     compareBy<AudioItem> { it.trackNumber ?: Int.MAX_VALUE }
@@ -100,7 +76,90 @@ class MediaStoreAudioRepository(
                 )
             }.sortedBy { it.displayTitle.lowercase(Locale.US) }
         }
+
+        internal fun groupTracksToArtists(tracks: List<AudioItem>): List<ArtistItem> {
+            // Group tracks by normalized artist identity (lowercase, trimmed).
+            // Blank or unknown artists normalize to "unknown artist" via displayArtist.
+            val grouped = tracks.groupBy { track ->
+                track.displayArtist.lowercase(Locale.US)
+            }
+
+            return grouped.map { (_, artistTracks) ->
+                // Sort artist tracks: album name ascending, track sequence number ascending, then clean title
+                val sortedTracks = artistTracks.sortedWith(
+                    compareBy<AudioItem> { it.displayAlbum.lowercase(Locale.US) }
+                        .thenBy { it.trackNumber ?: Int.MAX_VALUE }
+                        .thenBy { it.cleanTitle.lowercase(Locale.US) }
+                )
+
+                // Determine artist display name truthfully without fabricating fictional identities
+                val canonicalName = artistTracks.firstOrNull {
+                    !it.artist.isNullOrBlank() && !it.artist.equals("<unknown>", ignoreCase = true)
+                }?.artist?.trim() ?: "Unknown Artist"
+
+                // Calculate album count using stable MediaStore albumId where available;
+                // fallback to normalized displayAlbum when albumId is missing
+                val distinctAlbums = artistTracks.map { track ->
+                    if (track.albumId != null && track.albumId > 0L) {
+                        "id_${track.albumId}"
+                    } else {
+                        "title_${track.displayAlbum.lowercase(Locale.US)}"
+                    }
+                }.distinct()
+
+                val artworkUri = artistTracks.mapNotNull { it.artworkUri }.firstOrNull()
+
+                ArtistItem(
+                    name = canonicalName,
+                    trackCount = sortedTracks.size,
+                    albumCount = distinctAlbums.size,
+                    artworkUri = artworkUri,
+                    tracks = sortedTracks
+                )
+            }.sortedBy { it.displayName.lowercase(Locale.US) }
+        }
     }
+
+    @Volatile
+    private var cachedTracks: List<AudioItem>? = null
+
+    override suspend fun getAudioTracks(): Result<List<AudioItem>> = withContext(Dispatchers.IO) {
+        runCatching {
+            // Deduplicated map keyed by canonical physical path (or synthetic key if path unavailable)
+            val reconciledAudio = LinkedHashMap<String, AudioItem>()
+
+            // -------------------------------------------------------------
+            // SOURCE 1: MediaStore Query (Relaxed, Incomplete-Row Aware)
+            // -------------------------------------------------------------
+            queryMediaStore(reconciledAudio)
+
+            // -------------------------------------------------------------
+            // SOURCE 2: Direct Filesystem Discovery (Authoritative Fallback)
+            // -------------------------------------------------------------
+            scanPublicFilesystem(reconciledAudio)
+
+            // Return sorted by dateAdded DESC (matching established LumaPlay sorting contract)
+            val sorted = reconciledAudio.values.sortedByDescending { it.dateAdded }
+            cachedTracks = sorted
+            sorted
+        }
+    }
+
+    override suspend fun getAlbums(): Result<List<AlbumItem>> = withContext(Dispatchers.IO) {
+        runCatching {
+            val tracks = cachedTracks ?: getAudioTracks().getOrThrow()
+            groupTracksToAlbums(tracks)
+        }
+    }
+
+    override suspend fun getArtists(): Result<List<ArtistItem>> = withContext(Dispatchers.IO) {
+        runCatching {
+            val tracks = cachedTracks ?: getAudioTracks().getOrThrow()
+            groupTracksToArtists(tracks)
+        }
+    }
+
+
 
     private fun queryMediaStore(outMap: LinkedHashMap<String, AudioItem>) {
         val projection = arrayOf(

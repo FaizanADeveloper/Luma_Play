@@ -2,6 +2,7 @@ package com.lumaplay.tv.ui.music
 
 import android.net.FakeUri
 import com.lumaplay.tv.data.model.AlbumItem
+import com.lumaplay.tv.data.model.ArtistItem
 import com.lumaplay.tv.data.model.AudioItem
 import com.lumaplay.tv.data.repository.AudioRepository
 import com.lumaplay.tv.player.audio.AudioPlayerState
@@ -30,7 +31,9 @@ class MusicPlayerViewModelTest {
     }
 
     private class FakeAudioRepository(
-        var tracksResult: Result<List<AudioItem>> = Result.success(emptyList())
+        var tracksResult: Result<List<AudioItem>> = Result.success(emptyList()),
+        var albumsResult: Result<List<AlbumItem>> = Result.success(emptyList()),
+        var artistsResult: Result<List<ArtistItem>> = Result.success(emptyList())
     ) : AudioRepository {
         var scanCallCount = 0
 
@@ -40,7 +43,11 @@ class MusicPlayerViewModelTest {
         }
 
         override suspend fun getAlbums(): Result<List<AlbumItem>> {
-            return Result.success(emptyList())
+            return albumsResult
+        }
+
+        override suspend fun getArtists(): Result<List<ArtistItem>> {
+            return artistsResult
         }
     }
 
@@ -350,5 +357,149 @@ class MusicPlayerViewModelTest {
         assertFalse(controller.releaseCalled)
         viewModel.onCleared()
         assertTrue(controller.releaseCalled)
+    }
+
+    // 11. Category selection updates active category in Success state.
+    @Test
+    fun testCategorySelectionUpdatesState() {
+        val track = createTrack(1)
+        val repository = FakeAudioRepository(Result.success(listOf(track)))
+        val controller = FakeAudioPlaybackController()
+        val viewModel = MusicPlayerViewModel(
+            audioRepository = repository,
+            controller = controller,
+            coroutineDispatcher = Dispatchers.Unconfined
+        )
+
+        viewModel.scanMusic()
+        val initialSuccess = viewModel.libraryState.value as MusicLibraryUiState.Success
+        assertEquals(MusicCategory.SONGS, initialSuccess.selectedCategory)
+
+        viewModel.selectCategory(MusicCategory.ALBUMS)
+        val albumsSuccess = viewModel.libraryState.value as MusicLibraryUiState.Success
+        assertEquals(MusicCategory.ALBUMS, albumsSuccess.selectedCategory)
+
+        viewModel.selectCategory(MusicCategory.ARTISTS)
+        val artistsSuccess = viewModel.libraryState.value as MusicLibraryUiState.Success
+        assertEquals(MusicCategory.ARTISTS, artistsSuccess.selectedCategory)
+    }
+
+    // 12. Category selection is a no-op when library state is not Success.
+    @Test
+    fun testCategorySelectionNoOpWhenNotSuccess() {
+        val repository = FakeAudioRepository(Result.success(emptyList()))
+        val controller = FakeAudioPlaybackController()
+        val viewModel = MusicPlayerViewModel(
+            audioRepository = repository,
+            controller = controller,
+            coroutineDispatcher = Dispatchers.Unconfined
+        )
+
+        viewModel.selectCategory(MusicCategory.ALBUMS)
+        assertEquals(MusicLibraryUiState.Loading, viewModel.libraryState.value)
+    }
+
+    // 13. Successful scan exposes albums and artists.
+    @Test
+    fun testSuccessfulScanExposesAlbumsAndArtists() {
+        val track = createTrack(1)
+        val album = AlbumItem(id = 1, title = "Album 1", artist = "Artist 1", trackCount = 1, tracks = listOf(track))
+        val artist = ArtistItem(name = "Artist 1", trackCount = 1, albumCount = 1, tracks = listOf(track))
+
+        val repository = FakeAudioRepository(
+            tracksResult = Result.success(listOf(track)),
+            albumsResult = Result.success(listOf(album)),
+            artistsResult = Result.success(listOf(artist))
+        )
+        val controller = FakeAudioPlaybackController()
+        val viewModel = MusicPlayerViewModel(
+            audioRepository = repository,
+            controller = controller,
+            coroutineDispatcher = Dispatchers.Unconfined
+        )
+
+        viewModel.scanMusic()
+        val state = viewModel.libraryState.value
+        assertTrue(state is MusicLibraryUiState.Success)
+        val success = state as MusicLibraryUiState.Success
+        assertEquals(1, success.tracks.size)
+        assertEquals(1, success.albums.size)
+        assertEquals("Album 1", success.albums[0].title)
+        assertEquals(1, success.artists.size)
+        assertEquals("Artist 1", success.artists[0].name)
+    }
+
+    // 14. playAlbum populates queue and starts playback from track one.
+    @Test
+    fun testPlayAlbumPopulatesQueueAndPlays() {
+        val track1 = createTrack(1, "Track 1")
+        val track2 = createTrack(2, "Track 2")
+        val album = AlbumItem(id = 10, title = "Album 10", artist = "Artist 10", trackCount = 2, tracks = listOf(track1, track2))
+
+        val repository = FakeAudioRepository()
+        val controller = FakeAudioPlaybackController()
+        val viewModel = MusicPlayerViewModel(
+            audioRepository = repository,
+            controller = controller,
+            coroutineDispatcher = Dispatchers.Unconfined
+        )
+
+        viewModel.playAlbum(album)
+        assertEquals(listOf(track1, track2), controller.lastSetQueueTracks)
+        assertEquals(0, controller.lastSetQueueStartIndex)
+        assertEquals(true, controller.lastSetQueueAutoPlay)
+    }
+
+    // 15. playAlbum with empty collection does not alter queue.
+    @Test
+    fun testPlayAlbumWithEmptyCollectionDoesNothing() {
+        val emptyAlbum = AlbumItem(id = 11, title = "Empty Album", artist = "Unknown", trackCount = 0, tracks = emptyList())
+        val repository = FakeAudioRepository()
+        val controller = FakeAudioPlaybackController()
+        val viewModel = MusicPlayerViewModel(
+            audioRepository = repository,
+            controller = controller,
+            coroutineDispatcher = Dispatchers.Unconfined
+        )
+
+        viewModel.playAlbum(emptyAlbum)
+        assertNull(controller.lastSetQueueTracks)
+    }
+
+    // 16. playArtist populates queue and starts playback from track one.
+    @Test
+    fun testPlayArtistPopulatesQueueAndPlays() {
+        val track1 = createTrack(1, "Artist Song 1")
+        val track2 = createTrack(2, "Artist Song 2")
+        val artist = ArtistItem(name = "Rock Band", trackCount = 2, albumCount = 1, tracks = listOf(track1, track2))
+
+        val repository = FakeAudioRepository()
+        val controller = FakeAudioPlaybackController()
+        val viewModel = MusicPlayerViewModel(
+            audioRepository = repository,
+            controller = controller,
+            coroutineDispatcher = Dispatchers.Unconfined
+        )
+
+        viewModel.playArtist(artist)
+        assertEquals(listOf(track1, track2), controller.lastSetQueueTracks)
+        assertEquals(0, controller.lastSetQueueStartIndex)
+        assertEquals(true, controller.lastSetQueueAutoPlay)
+    }
+
+    // 17. playArtist with empty collection does not alter queue.
+    @Test
+    fun testPlayArtistWithEmptyCollectionDoesNothing() {
+        val emptyArtist = ArtistItem(name = "Empty Artist", trackCount = 0, albumCount = 0, tracks = emptyList())
+        val repository = FakeAudioRepository()
+        val controller = FakeAudioPlaybackController()
+        val viewModel = MusicPlayerViewModel(
+            audioRepository = repository,
+            controller = controller,
+            coroutineDispatcher = Dispatchers.Unconfined
+        )
+
+        viewModel.playArtist(emptyArtist)
+        assertNull(controller.lastSetQueueTracks)
     }
 }

@@ -2,6 +2,8 @@ package com.lumaplay.tv.ui.music
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lumaplay.tv.data.model.AlbumItem
+import com.lumaplay.tv.data.model.ArtistItem
 import com.lumaplay.tv.data.model.AudioItem
 import com.lumaplay.tv.data.repository.AudioRepository
 import com.lumaplay.tv.player.audio.AudioPlayerController
@@ -15,11 +17,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
+ * Supported top-level browsing categories in the Music Library.
+ */
+enum class MusicCategory {
+    SONGS,
+    ALBUMS,
+    ARTISTS
+}
+
+/**
  * Presentation state for local music library scanning and browsing.
  */
 sealed interface MusicLibraryUiState {
     data object Loading : MusicLibraryUiState
-    data class Success(val tracks: List<AudioItem>) : MusicLibraryUiState
+    data class Success(
+        val tracks: List<AudioItem>,
+        val albums: List<AlbumItem> = emptyList(),
+        val artists: List<ArtistItem> = emptyList(),
+        val selectedCategory: MusicCategory = MusicCategory.SONGS
+    ) : MusicLibraryUiState
     data object Empty : MusicLibraryUiState
     data class Error(val message: String) : MusicLibraryUiState
 }
@@ -125,7 +141,7 @@ class MusicPlayerViewModel(
     }
 
     /**
-     * Triggers asynchronous audio track discovery from the configured repository.
+     * Triggers asynchronous audio track, album, and artist discovery from the configured repository.
      */
     fun scanMusic() {
         if (isScanInProgress) return
@@ -134,22 +150,39 @@ class MusicPlayerViewModel(
 
         viewModelScope.launch(coroutineDispatcher) {
             try {
-                audioRepository.getAudioTracks()
-                    .onSuccess { tracks ->
-                        _libraryState.value = if (tracks.isEmpty()) {
-                            MusicLibraryUiState.Empty
-                        } else {
-                            MusicLibraryUiState.Success(tracks)
-                        }
-                    }
-                    .onFailure { error ->
-                        _libraryState.value = MusicLibraryUiState.Error(
-                            message = error.localizedMessage ?: "Failed to scan audio library."
-                        )
-                    }
+                val tracksResult = audioRepository.getAudioTracks()
+                val tracks = tracksResult.getOrThrow()
+
+                if (tracks.isEmpty()) {
+                    _libraryState.value = MusicLibraryUiState.Empty
+                } else {
+                    val albums = audioRepository.getAlbums().getOrDefault(emptyList())
+                    val artists = audioRepository.getArtists().getOrDefault(emptyList())
+                    val currentCategory = (_libraryState.value as? MusicLibraryUiState.Success)?.selectedCategory ?: MusicCategory.SONGS
+                    _libraryState.value = MusicLibraryUiState.Success(
+                        tracks = tracks,
+                        albums = albums,
+                        artists = artists,
+                        selectedCategory = currentCategory
+                    )
+                }
+            } catch (e: Exception) {
+                _libraryState.value = MusicLibraryUiState.Error(
+                    message = e.localizedMessage ?: "Failed to scan audio library."
+                )
             } finally {
                 isScanInProgress = false
             }
+        }
+    }
+
+    /**
+     * Updates the active browsing category (Songs, Albums, Artists).
+     */
+    fun selectCategory(category: MusicCategory) {
+        val current = _libraryState.value as? MusicLibraryUiState.Success ?: return
+        if (current.selectedCategory != category) {
+            _libraryState.value = current.copy(selectedCategory = category)
         }
     }
 
@@ -161,6 +194,24 @@ class MusicPlayerViewModel(
         val targetIndex = trackList.indexOfFirst { it.id == track.id }
         val startIndex = if (targetIndex >= 0) targetIndex else 0
         controller.setQueue(tracks = trackList, startIndex = startIndex, autoPlay = true)
+    }
+
+    /**
+     * Begins playback of [album] by populating the active queue with its ordered tracks
+     * and starting playback from the first track.
+     */
+    fun playAlbum(album: AlbumItem) {
+        if (album.tracks.isEmpty()) return
+        controller.setQueue(tracks = album.tracks, startIndex = 0, autoPlay = true)
+    }
+
+    /**
+     * Begins playback of [artist] by populating the active queue with its ordered tracks
+     * and starting playback from the first track.
+     */
+    fun playArtist(artist: ArtistItem) {
+        if (artist.tracks.isEmpty()) return
+        controller.setQueue(tracks = artist.tracks, startIndex = 0, autoPlay = true)
     }
 
     /**
