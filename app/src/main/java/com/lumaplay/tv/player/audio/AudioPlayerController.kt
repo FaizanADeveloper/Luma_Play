@@ -363,11 +363,41 @@ class AudioPlayerController(
      */
     fun seekTo(positionMs: Long) {
         if (isReleased) return
-        val duration = exoPlayer.duration
-        val maxDuration = if (duration > 0L) duration else Long.MAX_VALUE
+        val rawDuration = exoPlayer.duration
+        val maxDuration = if (rawDuration > 0L) {
+            rawDuration
+        } else {
+            playbackQueue.currentTrack?.durationMs?.takeIf { it > 0L } ?: Long.MAX_VALUE
+        }
         val clamped = positionMs.coerceIn(0L, maxDuration)
         exoPlayer.seekTo(clamped)
         _state.update { it.copy(currentPositionMs = clamped) }
+    }
+
+    /**
+     * Seeks relative to the current position by [deltaMs].
+     * Clamps the target position between 0 and track duration.
+     * If duration is unknown or non-positive (<= 0), seeking is a no-op.
+     */
+    fun seekBy(deltaMs: Long) {
+        if (isReleased) return
+        val rawDuration = exoPlayer.duration
+        val duration = if (rawDuration > 0L) {
+            rawDuration
+        } else {
+            playbackQueue.currentTrack?.durationMs?.coerceAtLeast(0L) ?: 0L
+        }
+        val currentPos = if (exoPlayer.isPlaying) {
+            exoPlayer.currentPosition.coerceAtLeast(0L)
+        } else {
+            _state.value.currentPositionMs
+        }
+        val target = calculateSeekTarget(
+            currentPositionMs = currentPos,
+            deltaMs = deltaMs,
+            durationMs = duration
+        ) ?: return
+        seekTo(target)
     }
 
     /**
@@ -607,4 +637,22 @@ internal fun AudioItem.toMediaItem(): MediaItem {
         }
         .setMediaMetadata(metadata)
         .build()
+}
+
+/**
+ * Pure calculation helper for relative seeking.
+ *
+ * @param currentPositionMs Current elapsed playback position in milliseconds.
+ * @param deltaMs Relative change in milliseconds (positive for forward, negative for rewind).
+ * @param durationMs Total track duration in milliseconds.
+ * @return Target position in milliseconds clamped between 0 and [durationMs], or null if duration is invalid.
+ */
+internal fun calculateSeekTarget(
+    currentPositionMs: Long,
+    deltaMs: Long,
+    durationMs: Long
+): Long? {
+    if (durationMs <= 0L) return null
+    val current = currentPositionMs.coerceAtLeast(0L)
+    return (current + deltaMs).coerceIn(0L, durationMs)
 }

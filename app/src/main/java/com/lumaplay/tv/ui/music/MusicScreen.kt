@@ -22,11 +22,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.focusable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -35,7 +38,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -218,6 +228,11 @@ private fun NowPlayingPanel(
     val colors = LumaTheme.colors
     val spacing = LumaTheme.spacing
 
+    val scrubberFocusRequester = remember { FocusRequester() }
+    var isScrubberFocused by remember { mutableStateOf(false) }
+    val canSeek = playbackState.currentTrack != null && playbackState.durationMs > 0L
+    val transportUpFocusRequester = if (canSeek) scrubberFocusRequester else firstTrackFocusRequester
+
     val shuffleButtonFocusRequester = remember { FocusRequester() }
     val prevButtonFocusRequester = remember { FocusRequester() }
     val nextButtonFocusRequester = remember { FocusRequester() }
@@ -343,39 +358,94 @@ private fun NowPlayingPanel(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Timeline Scrubber Bar with subtle progress thumb
-            Column(modifier = Modifier.fillMaxWidth()) {
+            // Timeline Scrubber Bar with interactive TV D-pad seeking
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(scrubberFocusRequester)
+                    .focusProperties {
+                        canFocus = canSeek
+                        down = playButtonFocusRequester
+                        up = firstTrackFocusRequester
+                    }
+                    .onFocusChanged { isScrubberFocused = it.isFocused }
+                    .focusable(enabled = canSeek)
+                    .onKeyEvent { keyEvent ->
+                        if (!canSeek) return@onKeyEvent false
+                        when (keyEvent.key) {
+                            Key.DirectionRight -> {
+                                if (keyEvent.type == KeyEventType.KeyDown) {
+                                    viewModel.seekBy(10_000L)
+                                }
+                                true
+                            }
+                            Key.DirectionLeft -> {
+                                if (keyEvent.type == KeyEventType.KeyDown) {
+                                    viewModel.seekBy(-10_000L)
+                                }
+                                true
+                            }
+                            Key.DirectionCenter, Key.Enter -> {
+                                if (keyEvent.type == KeyEventType.KeyDown) {
+                                    viewModel.togglePlayPause()
+                                }
+                                true
+                            }
+                            else -> false
+                        }
+                    }
+                    .clip(LumaTheme.shapes.pill)
+                    .border(
+                        width = if (isScrubberFocused) 1.5.dp else 0.dp,
+                        color = if (isScrubberFocused) colors.cyan else Color.Transparent,
+                        shape = LumaTheme.shapes.pill
+                    )
+                    .background(
+                        color = if (isScrubberFocused) colors.cyan.copy(alpha = 0.08f) else Color.Transparent,
+                        shape = LumaTheme.shapes.pill
+                    )
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
+            ) {
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(14.dp),
+                        .height(16.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
+                    val trackHeight = if (isScrubberFocused) 6.dp else 4.dp
+                    val thumbRadius = if (isScrubberFocused) 9.dp else 6.dp
+                    val thumbDiameter = thumbRadius * 2
+                    val progress = playbackState.progress.coerceIn(0f, 1f)
+                    val thumbOffset = (maxWidth * progress - thumbRadius).coerceIn(0.dp, maxWidth - thumbDiameter)
+
                     // Track background line
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(4.dp)
+                            .height(trackHeight)
                             .clip(LumaTheme.shapes.pill)
                             .background(colors.surfaceContainerHighest)
                     )
                     // Filled cyan progress line
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(playbackState.progress.coerceIn(0f, 1f))
-                            .height(4.dp)
+                            .fillMaxWidth(progress)
+                            .height(trackHeight)
                             .clip(LumaTheme.shapes.pill)
                             .background(colors.cyan)
                     )
-                    // Subtle circular thumb with cyan border
-                    val thumbOffset = maxWidth * playbackState.progress.coerceIn(0f, 1f) - 6.dp
+                    // Circular thumb with luminous cyan accent
                     Box(
                         modifier = Modifier
-                            .offset(x = thumbOffset.coerceAtLeast(0.dp))
-                            .size(12.dp)
+                            .offset(x = thumbOffset)
+                            .size(thumbDiameter)
                             .clip(CircleShape)
                             .background(colors.textPrimary)
-                            .border(1.5.dp, colors.cyan, CircleShape)
+                            .border(
+                                width = if (isScrubberFocused) 2.5.dp else 1.5.dp,
+                                color = colors.cyan,
+                                shape = CircleShape
+                            )
                     )
                 }
 
@@ -388,7 +458,7 @@ private fun NowPlayingPanel(
                     Text(
                         text = playbackState.formattedCurrentPosition,
                         style = LumaTheme.typography.labelSm,
-                        color = colors.cyan
+                        color = if (isScrubberFocused) colors.cyan else colors.cyan.copy(alpha = 0.85f)
                     )
                     Text(
                         text = playbackState.formattedDuration,
@@ -419,7 +489,7 @@ private fun NowPlayingPanel(
                     .focusProperties {
                         left = sidebarMusicFocusRequester
                         right = prevButtonFocusRequester
-                        up = firstTrackFocusRequester
+                        up = transportUpFocusRequester
                         down = FocusRequester.Cancel
                     }
             ) {
@@ -443,7 +513,7 @@ private fun NowPlayingPanel(
                     .focusProperties {
                         left = shuffleButtonFocusRequester
                         right = playButtonFocusRequester
-                        up = firstTrackFocusRequester
+                        up = transportUpFocusRequester
                         down = FocusRequester.Cancel
                     }
             ) {
@@ -467,7 +537,7 @@ private fun NowPlayingPanel(
                     .focusProperties {
                         left = prevButtonFocusRequester
                         right = nextButtonFocusRequester
-                        up = firstTrackFocusRequester
+                        up = transportUpFocusRequester
                         down = FocusRequester.Cancel
                     }
             ) {
@@ -493,7 +563,7 @@ private fun NowPlayingPanel(
                     .focusProperties {
                         left = playButtonFocusRequester
                         right = repeatButtonFocusRequester
-                        up = firstTrackFocusRequester
+                        up = transportUpFocusRequester
                         down = FocusRequester.Cancel
                     }
             ) {
@@ -523,7 +593,7 @@ private fun NowPlayingPanel(
                     .focusProperties {
                         left = nextButtonFocusRequester
                         right = firstTrackFocusRequester
-                        up = firstTrackFocusRequester
+                        up = transportUpFocusRequester
                         down = FocusRequester.Cancel
                     }
             ) {

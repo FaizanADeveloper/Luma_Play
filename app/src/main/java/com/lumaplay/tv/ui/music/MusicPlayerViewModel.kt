@@ -39,6 +39,7 @@ interface AudioPlaybackController {
     fun next()
     fun previous()
     fun seekTo(positionMs: Long)
+    fun seekBy(deltaMs: Long)
     fun toggleShuffle()
     fun setShuffle(enabled: Boolean)
     fun setRepeatMode(mode: AudioRepeatMode)
@@ -67,6 +68,7 @@ class RealAudioPlaybackController(
     override fun next() = controller.next()
     override fun previous() = controller.previous()
     override fun seekTo(positionMs: Long) = controller.seekTo(positionMs)
+    override fun seekBy(deltaMs: Long) = controller.seekBy(deltaMs)
     override fun toggleShuffle() = controller.toggleShuffle()
     override fun setShuffle(enabled: Boolean) = controller.setShuffle(enabled)
     override fun setRepeatMode(mode: AudioRepeatMode) = controller.setRepeatMode(mode)
@@ -190,6 +192,11 @@ class MusicPlayerViewModel(
      * Seeks to [positionMs] in the current track.
      */
     fun seekTo(positionMs: Long) = controller.seekTo(positionMs)
+
+    /**
+     * Seeks relative to the current position by [deltaMs].
+     */
+    fun seekBy(deltaMs: Long) = controller.seekBy(deltaMs)
 
     /**
      * Toggles shuffle state on or off.

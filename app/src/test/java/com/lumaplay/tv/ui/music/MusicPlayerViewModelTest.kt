@@ -60,6 +60,7 @@ class MusicPlayerViewModelTest {
         var nextCalled = false
         var previousCalled = false
         var seekToCalledWith: Long? = null
+        var seekByCalledWith: Long? = null
         var toggleShuffleCalled = false
         var setShuffleCalledWith: Boolean? = null
         var setRepeatModeCalledWith: AudioRepeatMode? = null
@@ -80,6 +81,7 @@ class MusicPlayerViewModelTest {
         override fun next() { nextCalled = true }
         override fun previous() { previousCalled = true }
         override fun seekTo(positionMs: Long) { seekToCalledWith = positionMs }
+        override fun seekBy(deltaMs: Long) { seekByCalledWith = deltaMs }
         override fun toggleShuffle() { toggleShuffleCalled = true }
         override fun setShuffle(enabled: Boolean) { setShuffleCalledWith = enabled }
         override fun setRepeatMode(mode: AudioRepeatMode) { setRepeatModeCalledWith = mode }
@@ -259,6 +261,12 @@ class MusicPlayerViewModelTest {
         assertNull(controller.seekToCalledWith)
         viewModel.seekTo(45_000L)
         assertEquals(45_000L, controller.seekToCalledWith)
+
+        assertNull(controller.seekByCalledWith)
+        viewModel.seekBy(10_000L)
+        assertEquals(10_000L, controller.seekByCalledWith)
+        viewModel.seekBy(-10_000L)
+        assertEquals(-10_000L, controller.seekByCalledWith)
     }
 
     // 7. Shuffle and repeat methods delegate correctly.
