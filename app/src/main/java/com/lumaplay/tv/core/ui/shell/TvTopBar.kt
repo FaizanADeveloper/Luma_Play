@@ -26,12 +26,21 @@ import androidx.tv.material3.Text
 import com.lumaplay.tv.R
 import com.lumaplay.tv.core.theme.LumaTheme
 
+import android.hardware.display.DisplayManager
+import android.os.Handler
+import android.os.Looper
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.lumaplay.tv.core.util.DisplayModeHelper
+
 /**
  * Top Status Bar for Android TV.
  *
  * Implements Google Stitch home_dashboard header specifications:
  * - 64dp height and 56dp TV-safe margin horizontal content padding.
- * - Real display mode detection based on screen density & width (1080p Cinema Mode / 4K UHD).
+ * - Real physical display mode detection via [DisplayModeHelper] (720p / 1080p / 4K / 8K Cinema Mode).
  * - Real network transport query via [ConnectivityManager] (Ethernet LAN / Wi-Fi / Offline) with vector icon.
  * - 32dp user profile avatar circle with vector person symbol.
  */
@@ -43,10 +52,24 @@ fun TvTopBar(
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
 
-    // Real display mode calculation
-    val displayMode = remember(configuration) {
-        val widthDp = configuration.screenWidthDp
-        if (widthDp >= 2560) "4K Cinema Mode" else "1080p Cinema Mode"
+    // Dynamic physical display mode calculation with live display listener
+    var displayMode by remember(configuration) {
+        mutableStateOf(DisplayModeHelper.getDisplayModeLabel(context))
+    }
+
+    DisposableEffect(context) {
+        val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
+        val listener = object : DisplayManager.DisplayListener {
+            override fun onDisplayAdded(displayId: Int) = Unit
+            override fun onDisplayRemoved(displayId: Int) = Unit
+            override fun onDisplayChanged(displayId: Int) {
+                displayMode = DisplayModeHelper.getDisplayModeLabel(context)
+            }
+        }
+        displayManager?.registerDisplayListener(listener, Handler(Looper.getMainLooper()))
+        onDispose {
+            displayManager?.unregisterDisplayListener(listener)
+        }
     }
 
     // Real network connectivity status query
