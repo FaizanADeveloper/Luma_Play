@@ -27,6 +27,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,9 +35,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -52,12 +55,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
@@ -66,7 +74,9 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -108,9 +118,17 @@ import com.lumaplay.tv.player.track.ExternalSubtitleHelper
 import com.lumaplay.tv.player.track.SubtitleTrackItem
 import com.lumaplay.tv.player.track.SubtitleTrackSelectionDialog
 import com.lumaplay.tv.player.track.TrackHelper
+import com.lumaplay.tv.player.seek.DeferredSeekState
+import com.lumaplay.tv.player.seek.SeekClampingHelper
+import com.lumaplay.tv.player.seek.SeekInterval
+import com.lumaplay.tv.player.seek.SeekPreferences
+import com.lumaplay.tv.player.seek.ThumbnailPreviewCard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Custom [PlayerView] that explicitly gathers transparent region for its underlying [SurfaceView].
@@ -178,6 +196,12 @@ fun PlayerScreen(
     var aspectRatioMode by remember { mutableStateOf(AspectRatioMode.FIT) }
     var showStats by remember { mutableStateOf(false) }
 
+    // Phase 5.2F/G: Configurable seek interval and deferred scrubbing state
+    val seekPreferences = remember { SeekPreferences(context) }
+    var seekInterval by remember { mutableStateOf(seekPreferences.getSeekInterval()) }
+    var deferredSeekState by remember { mutableStateOf(DeferredSeekState.IDLE) }
+    val scrubberFocusRequester = remember { FocusRequester() }
+
     // Real-time telemetry state collected via AnalyticsListener & source metadata fallback
     var videoDecoderName by remember { mutableStateOf<String?>(null) }
     var audioDecoderName by remember { mutableStateOf<String?>(null) }
@@ -209,17 +233,17 @@ fun PlayerScreen(
     val audioPillFocusRequester = remember { FocusRequester() }
     val subtitlePillFocusRequester = remember { FocusRequester() }
 
-    // Auto-hide controls after 3 seconds while playing, suspended while stats overlay or track dialogs are active
-    LaunchedEffect(showControls, isPlaying, lastInteractionTime, showStats, showAudioDialog, showSubtitleDialog) {
-        if (showControls && isPlaying && !showStats && !showAudioDialog && !showSubtitleDialog) {
+    // Auto-hide controls after 3 seconds while playing, suspended while stats overlay, track dialogs, or scrubbing is active
+    LaunchedEffect(showControls, isPlaying, lastInteractionTime, showStats, showAudioDialog, showSubtitleDialog, deferredSeekState.isScrubbing) {
+        if (showControls && isPlaying && !showStats && !showAudioDialog && !showSubtitleDialog && !deferredSeekState.isScrubbing) {
             delay(3000L)
             showControls = false
         }
     }
 
-    // Request remote focus on Play/Pause when controls are revealed
+    // Request remote focus on Play/Pause when controls are revealed (unless scrubbing is active)
     LaunchedEffect(showControls) {
-        if (showControls) {
+        if (showControls && !deferredSeekState.isScrubbing) {
             delay(50L)
             runCatching { playPauseFocusRequester.requestFocus() }
         }
@@ -241,6 +265,40 @@ fun PlayerScreen(
     }
     val subtitlePillText = remember(activeSubtitleTrack) {
         activeSubtitleTrack?.osdSummary ?: "Subtitles Off"
+    }
+
+    var currentTimeText by remember {
+        mutableStateOf(SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()))
+    }
+    LaunchedEffect(Unit) {
+        while (true) {
+            currentTimeText = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
+            delay(1000L)
+        }
+    }
+
+    val isUsbStorage = remember(video.filePath) {
+        val path = video.filePath ?: ""
+        path.contains("usb", ignoreCase = true) ||
+            (path.startsWith("/storage/") && !path.startsWith("/storage/emulated/"))
+    }
+    val storageLabel = if (isUsbStorage) "USB Storage" else "Internal Media"
+
+    val isHdr = remember(colorInfo) {
+        val transfer = colorInfo?.colorTransfer ?: -1
+        transfer == C.COLOR_TRANSFER_ST2084 || transfer == C.COLOR_TRANSFER_HLG
+    }
+
+    val audioBadgeText = remember(activeAudioTrack, audioMimeType) {
+        activeAudioTrack?.shortCodecLabel?.uppercase()
+            ?: when {
+                audioMimeType?.contains("truehd", ignoreCase = true) == true -> "TRUEHD"
+                audioMimeType?.contains("eac3", ignoreCase = true) == true || audioMimeType?.contains("e-ac-3", ignoreCase = true) == true -> "E-AC3"
+                audioMimeType?.contains("opus", ignoreCase = true) == true -> "OPUS"
+                audioMimeType?.contains("flac", ignoreCase = true) == true -> "FLAC"
+                audioMimeType?.contains("aac", ignoreCase = true) == true || audioMimeType?.contains("mp4a", ignoreCase = true) == true -> "AAC"
+                else -> "AUDIO"
+            }
     }
 
     LaunchedEffect(audioTracks, subtitleTracks) {
@@ -494,9 +552,14 @@ fun PlayerScreen(
         }
     }
 
-    // Handle system Back button: dismiss track dialogs or stats overlay first if open
+    // Handle system Back button: dismiss scrubbing, track dialogs or stats overlay first if open
     BackHandler(enabled = true) {
         when {
+            deferredSeekState.isScrubbing -> {
+                deferredSeekState = DeferredSeekState.IDLE
+                triggerControls()
+                runCatching { playPauseFocusRequester.requestFocus() }
+            }
             showAudioDialog -> {
                 showAudioDialog = false
                 triggerControls()
@@ -543,7 +606,9 @@ fun PlayerScreen(
         playbackSpeed = playbackSpeed,
         aspectRatioMode = aspectRatioMode,
         showStats = showStats,
-        telemetry = telemetry
+        telemetry = telemetry,
+        seekInterval = seekInterval,
+        deferredSeekState = deferredSeekState
     )
 
     Box(
@@ -562,6 +627,12 @@ fun PlayerScreen(
                     when (keyCode) {
                         KeyEvent.KEYCODE_BACK -> {
                             when {
+                                deferredSeekState.isScrubbing -> {
+                                    deferredSeekState = DeferredSeekState.IDLE
+                                    triggerControls()
+                                    runCatching { playPauseFocusRequester.requestFocus() }
+                                    true
+                                }
                                 showAudioDialog -> {
                                     showAudioDialog = false
                                     triggerControls()
@@ -612,18 +683,33 @@ fun PlayerScreen(
                             triggerControls()
                             true
                         }
-                        KeyEvent.KEYCODE_DPAD_LEFT,
+                        KeyEvent.KEYCODE_DPAD_LEFT -> {
+                            val dur = player.duration.coerceAtLeast(0L)
+                            deferredSeekState = DeferredSeekState.startScrubbing(player.currentPosition, dur)
+                                .stepBackward(seekInterval.millis)
+                            triggerControls()
+                            runCatching { scrubberFocusRequester.requestFocus() }
+                            true
+                        }
+                        KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                            val dur = player.duration.coerceAtLeast(0L)
+                            deferredSeekState = DeferredSeekState.startScrubbing(player.currentPosition, dur)
+                                .stepForward(seekInterval.millis)
+                            triggerControls()
+                            runCatching { scrubberFocusRequester.requestFocus() }
+                            true
+                        }
                         KeyEvent.KEYCODE_MEDIA_REWIND -> {
-                            val newPosition = (player.currentPosition - 10_000L).coerceAtLeast(0L)
+                            val dur = player.duration.coerceAtLeast(0L)
+                            val newPosition = SeekClampingHelper.calculateBackward(player.currentPosition, seekInterval.millis, dur)
                             player.seekTo(newPosition)
                             currentPositionMs = newPosition
                             triggerControls()
                             true
                         }
-                        KeyEvent.KEYCODE_DPAD_RIGHT,
                         KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
-                            val maxDuration = player.duration.coerceAtLeast(0L)
-                            val newPosition = (player.currentPosition + 10_000L).coerceAtMost(maxDuration)
+                            val dur = player.duration.coerceAtLeast(0L)
+                            val newPosition = SeekClampingHelper.calculateForward(player.currentPosition, seekInterval.millis, dur)
                             player.seekTo(newPosition)
                             currentPositionMs = newPosition
                             triggerControls()
@@ -638,6 +724,12 @@ fun PlayerScreen(
                     when (keyCode) {
                         KeyEvent.KEYCODE_BACK -> {
                             when {
+                                deferredSeekState.isScrubbing -> {
+                                    deferredSeekState = DeferredSeekState.IDLE
+                                    triggerControls()
+                                    runCatching { playPauseFocusRequester.requestFocus() }
+                                    true
+                                }
                                 showAudioDialog -> {
                                     showAudioDialog = false
                                     triggerControls()
@@ -682,15 +774,16 @@ fun PlayerScreen(
                             true
                         }
                         KeyEvent.KEYCODE_MEDIA_REWIND -> {
-                            val newPosition = (player.currentPosition - 10_000L).coerceAtLeast(0L)
+                            val dur = player.duration.coerceAtLeast(0L)
+                            val newPosition = SeekClampingHelper.calculateBackward(player.currentPosition, seekInterval.millis, dur)
                             player.seekTo(newPosition)
                             currentPositionMs = newPosition
                             triggerControls()
                             true
                         }
                         KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
-                            val maxDuration = player.duration.coerceAtLeast(0L)
-                            val newPosition = (player.currentPosition + 10_000L).coerceAtMost(maxDuration)
+                            val dur = player.duration.coerceAtLeast(0L)
+                            val newPosition = SeekClampingHelper.calculateForward(player.currentPosition, seekInterval.millis, dur)
                             player.seekTo(newPosition)
                             currentPositionMs = newPosition
                             triggerControls()
@@ -827,12 +920,13 @@ fun PlayerScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Left: Circular Back button + Title
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier.weight(1f, fill = false)
                         ) {
-                            LumaButton(
+                            PlayerTransportButton(
                                 onClick = {
                                     if (showStats) {
                                         showStats = false
@@ -840,31 +934,122 @@ fun PlayerScreen(
                                     } else {
                                         onBack()
                                     }
-                                },
-                                variant = LumaButtonVariant.Secondary
-                            ) {
-                                Text(text = "← Back")
+                                }
+                            ) { isFocused ->
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_action_arrow_back),
+                                    contentDescription = "Back",
+                                    tint = if (isFocused) LumaTheme.colors.cyan else LumaTheme.colors.textPrimary,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
 
-                            Text(
-                                text = video.title,
-                                style = LumaTheme.typography.headlineMd,
-                                color = LumaTheme.colors.textPrimary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            Column(
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = video.title,
+                                    style = LumaTheme.typography.headlineMd.copy(fontWeight = FontWeight.Bold),
+                                    color = LumaTheme.colors.textPrimary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
 
-                        LumaBadge(
-                            text = video.resolutionTag,
-                            variant = if (video.resolutionTag == "4K") {
-                                LumaBadgeVariant.Highlight
-                            } else {
-                                LumaBadgeVariant.Standard
+                        // Right: Technical Format Badges + Source Indicator + Live Clock
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // Technical Format Badges Cluster
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(LumaTheme.colors.surfaceContainerLowest.copy(alpha = 0.8f))
+                                    .padding(horizontal = 8.dp, vertical = 5.dp)
+                            ) {
+                                if (isHdr) {
+                                    Text(
+                                        text = "HDR10",
+                                        style = LumaTheme.typography.labelSm.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 0.8.sp
+                                        ),
+                                        color = Color(0xFFFCD34D),
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(Color(0xFFFCD34D).copy(alpha = 0.2f))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                                Text(
+                                    text = video.resolutionTag,
+                                    style = LumaTheme.typography.labelSm.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 0.5.sp
+                                    ),
+                                    color = LumaTheme.colors.textSecondary,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(LumaTheme.colors.surfaceContainerHigh)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                                Text(
+                                    text = audioBadgeText,
+                                    style = LumaTheme.typography.labelSm.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 0.8.sp
+                                    ),
+                                    color = LumaTheme.colors.cyan,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(LumaTheme.colors.cyan.copy(alpha = 0.2f))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
                             }
-                        )
+
+                            // Storage Source Indicator
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(LumaTheme.colors.surfaceContainerHigh.copy(alpha = 0.8f))
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_action_usb),
+                                    contentDescription = null,
+                                    tint = LumaTheme.colors.cyan,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = storageLabel,
+                                    style = LumaTheme.typography.labelSm.copy(fontWeight = FontWeight.Medium),
+                                    color = LumaTheme.colors.textPrimary
+                                )
+                            }
+
+                            // Live Clock Pill
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(LumaTheme.colors.surfaceContainerHigh.copy(alpha = 0.8f))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = currentTimeText,
+                                    style = LumaTheme.typography.labelMd.copy(fontWeight = FontWeight.SemiBold),
+                                    color = LumaTheme.colors.textPrimary
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -886,48 +1071,202 @@ fun PlayerScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // Progress Bar Track with Buffered progress
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(LumaTheme.colors.surfaceContainerHighest)
+                        // Timeline Scrubber Section (Stage B)
+                        val scrubberInteractionSource = remember { MutableInteractionSource() }
+                        val isScrubberFocused by scrubberInteractionSource.collectIsFocusedAsState()
+
+                        LaunchedEffect(isScrubberFocused) {
+                            if (isScrubberFocused && !deferredSeekState.isScrubbing) {
+                                deferredSeekState = DeferredSeekState.startScrubbing(
+                                    currentPositionMs,
+                                    durationMs
+                                )
+                            }
+                        }
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            // Buffered Progress Track
-                            Box(
+                            // Timestamps directly above scrubber
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = playerState.formattedCurrentPosition,
+                                    style = LumaTheme.typography.labelMd.copy(
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 0.5.sp
+                                    ),
+                                    color = LumaTheme.colors.cyan
+                                )
+
+                                Text(
+                                    text = playerState.formattedDuration,
+                                    style = LumaTheme.typography.labelMd.copy(
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                        letterSpacing = 0.5.sp
+                                    ),
+                                    color = LumaTheme.colors.textSecondary
+                                )
+                            }
+
+                            // Scrubber Track with Illuminated Thumb and TV Remote Focus
+                            BoxWithConstraints(
                                 modifier = Modifier
-                                    .fillMaxWidth(playerState.bufferedProgress)
-                                    .height(6.dp)
-                                    .background(LumaTheme.colors.surfaceCard.copy(alpha = 0.8f))
-                            )
-                            // Playback Progress Track
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth(playerState.progress)
-                                    .height(6.dp)
-                                    .background(LumaTheme.colors.cyan)
-                            )
+                                    .fillMaxWidth()
+                                    .height(24.dp)
+                                    .focusRequester(scrubberFocusRequester)
+                                    .focusable(interactionSource = scrubberInteractionSource)
+                                    .onPreviewKeyEvent { keyEvent ->
+                                        if (keyEvent.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                                        when (keyEvent.nativeKeyEvent.keyCode) {
+                                            KeyEvent.KEYCODE_DPAD_LEFT -> {
+                                                deferredSeekState = deferredSeekState.stepBackward(seekInterval.millis)
+                                                triggerControls()
+                                                true
+                                            }
+                                            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                                                deferredSeekState = deferredSeekState.stepForward(seekInterval.millis)
+                                                triggerControls()
+                                                true
+                                            }
+                                            KeyEvent.KEYCODE_DPAD_CENTER,
+                                            KeyEvent.KEYCODE_ENTER,
+                                            KeyEvent.KEYCODE_NUMPAD_ENTER -> {
+                                                if (deferredSeekState.isScrubbing) {
+                                                    val target = deferredSeekState.previewPositionMs
+                                                    player.seekTo(target)
+                                                    currentPositionMs = target
+                                                    deferredSeekState = DeferredSeekState.IDLE
+                                                    triggerControls()
+                                                    runCatching { playPauseFocusRequester.requestFocus() }
+                                                    true
+                                                } else {
+                                                    false
+                                                }
+                                            }
+                                            KeyEvent.KEYCODE_BACK -> {
+                                                if (deferredSeekState.isScrubbing) {
+                                                    deferredSeekState = DeferredSeekState.IDLE
+                                                    triggerControls()
+                                                    runCatching { playPauseFocusRequester.requestFocus() }
+                                                    true
+                                                } else {
+                                                    false
+                                                }
+                                            }
+                                            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                                deferredSeekState = DeferredSeekState.IDLE
+                                                triggerControls()
+                                                runCatching { playPauseFocusRequester.requestFocus() }
+                                                true
+                                            }
+                                            else -> false
+                                        }
+                                    },
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                val progress = playerState.progress.coerceIn(0f, 1f)
+                                val thumbOffset = ((maxWidth - 16.dp) * progress).coerceAtLeast(0.dp)
+
+                                // Floating Preview Thumbnail Card above the thumb (Stage B)
+                                if (deferredSeekState.isScrubbing) {
+                                    val cardWidth = 200.dp
+                                    val rawOffset = ((maxWidth - 16.dp) * progress) - (cardWidth / 2) + 8.dp
+                                    val clampedCardOffset = rawOffset.coerceIn(0.dp, (maxWidth - cardWidth).coerceAtLeast(0.dp))
+
+                                    ThumbnailPreviewCard(
+                                        videoUri = video.contentUri,
+                                        previewPositionMs = deferredSeekState.previewPositionMs,
+                                        formattedPosition = deferredSeekState.formattedPreviewPosition,
+                                        modifier = Modifier
+                                            .offset(x = clampedCardOffset, y = (-140).dp)
+                                    )
+                                }
+
+                                // Background trough
+                                val trackHeight = if (isScrubberFocused || deferredSeekState.isScrubbing) 8.dp else 6.dp
+                                val trackShape = RoundedCornerShape(trackHeight / 2)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(trackHeight)
+                                        .clip(trackShape)
+                                        .background(LumaTheme.colors.surfaceContainerHighest.copy(alpha = 0.8f))
+                                        .then(
+                                            if (isScrubberFocused || deferredSeekState.isScrubbing) {
+                                                Modifier.border(1.dp, LumaTheme.colors.cyan.copy(alpha = 0.6f), trackShape)
+                                            } else {
+                                                Modifier
+                                            }
+                                        )
+                                ) {
+                                    // Buffered progress
+                                    if (playerState.bufferedProgress > 0f) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth(playerState.bufferedProgress.coerceIn(0f, 1f))
+                                                .fillMaxHeight()
+                                                .background(LumaTheme.colors.surfaceCard.copy(alpha = 0.8f))
+                                        )
+                                    }
+                                    // Elapsed progress
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(progress)
+                                            .fillMaxHeight()
+                                            .background(LumaTheme.colors.cyan)
+                                    )
+                                }
+
+                                // Illuminated thumb head (16dp normal, 20dp when focused/scrubbing)
+                                val isThumbActive = isScrubberFocused || deferredSeekState.isScrubbing
+                                val thumbSize = if (isThumbActive) 20.dp else 16.dp
+                                val thumbDotSize = if (isThumbActive) 8.dp else 6.dp
+                                Box(
+                                    modifier = Modifier
+                                        .offset(x = thumbOffset)
+                                        .size(thumbSize)
+                                        .cyanFocusGlow(
+                                            isFocused = isThumbActive,
+                                            shape = CircleShape,
+                                            glowColor = LumaTheme.colors.cyan,
+                                            glowRadius = 10.dp
+                                        )
+                                        .background(LumaTheme.colors.cyan, CircleShape)
+                                        .border(
+                                            if (isThumbActive) 2.dp else 1.dp,
+                                            Color.White,
+                                            CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(thumbDotSize)
+                                            .background(Color(0xFF080E1D), CircleShape)
+                                    )
+                                }
+                            }
                         }
 
                         // Playback Remote Control Row (matching Stitch full_screen_video_player_with_osd)
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 2.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Left: Duration & Track Selection Pills (Audio & Subtitles)
+                            // Left: Track Selection Pills (Audio & Subtitles)
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Elapsed / Total Duration
-                                Text(
-                                    text = "${playerState.formattedCurrentPosition} / ${playerState.formattedDuration}",
-                                    style = LumaTheme.typography.labelMd.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
-                                    color = LumaTheme.colors.textPrimary
-                                )
-
                                 // Audio Track Pill
                                 PlayerPillButton(
                                     onClick = {
@@ -938,7 +1277,8 @@ fun PlayerScreen(
                                     text = audioPillText,
                                     iconRes = R.drawable.ic_action_volume_up,
                                     isActive = showAudioDialog,
-                                    focusRequester = audioPillFocusRequester
+                                    focusRequester = audioPillFocusRequester,
+                                    modifier = Modifier.widthIn(max = 140.dp)
                                 )
 
                                 // Subtitle Track Pill
@@ -952,28 +1292,51 @@ fun PlayerScreen(
                                     text = subtitlePillText,
                                     iconRes = if (isSubtitleActive) R.drawable.ic_action_subtitles else R.drawable.ic_action_subtitles_off,
                                     isActive = showSubtitleDialog || isSubtitleActive,
-                                    focusRequester = subtitlePillFocusRequester
+                                    focusRequester = subtitlePillFocusRequester,
+                                    modifier = Modifier.widthIn(max = 130.dp)
                                 )
                             }
 
-                            // Center: Primary Transport Controls (Remote Snap Zone)
+                            // Center: Primary Transport Controls (5 buttons, Remote Snap Zone)
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Rewind 10s
+                                // Previous
                                 PlayerTransportButton(
                                     onClick = {
-                                        val newPos = (player.currentPosition - 10_000L).coerceAtLeast(0L)
+                                        val newPos = 0L
                                         player.seekTo(newPos)
                                         currentPositionMs = newPos
                                         triggerControls()
                                     }
                                 ) { isFocused ->
-                                    Text(
-                                        text = "10s ◀",
-                                        style = LumaTheme.typography.labelSm.copy(fontWeight = FontWeight.Bold),
-                                        color = if (isFocused) LumaTheme.colors.cyan else LumaTheme.colors.textPrimary
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_action_skip_previous),
+                                        contentDescription = "Previous",
+                                        tint = if (isFocused) LumaTheme.colors.cyan else LumaTheme.colors.textPrimary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                // Rewind
+                                PlayerTransportButton(
+                                    onClick = {
+                                        val newPos = SeekClampingHelper.calculateBackward(
+                                            player.currentPosition,
+                                            seekInterval.millis,
+                                            durationMs
+                                        )
+                                        player.seekTo(newPos)
+                                        currentPositionMs = newPos
+                                        triggerControls()
+                                    }
+                                ) { isFocused ->
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_action_replay_10),
+                                        contentDescription = "Rewind ${seekInterval.label}",
+                                        tint = if (isFocused) LumaTheme.colors.cyan else LumaTheme.colors.textPrimary,
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
 
@@ -984,41 +1347,75 @@ fun PlayerScreen(
                                         triggerControls()
                                     },
                                     isPrimary = true,
-                                    focusRequester = playPauseFocusRequester
+                                    focusRequester = playPauseFocusRequester,
+                                    modifier = Modifier.focusProperties { up = scrubberFocusRequester }
                                 ) { isFocused ->
                                     Icon(
                                         painter = painterResource(
                                             id = if (playerState.isPlaying) R.drawable.ic_action_pause else R.drawable.ic_action_play
                                         ),
                                         contentDescription = if (playerState.isPlaying) "Pause" else "Play",
-                                        tint = if (isFocused) Color.Black else LumaTheme.colors.cyan,
+                                        tint = Color(0xFF001E2C),
                                         modifier = Modifier.size(28.dp)
                                     )
                                 }
 
-                                // Fast Forward 10s
+                                // Fast Forward
                                 PlayerTransportButton(
                                     onClick = {
-                                        val maxDur = player.duration.coerceAtLeast(0L)
-                                        val newPos = (player.currentPosition + 10_000L).coerceAtMost(maxDur)
+                                        val newPos = SeekClampingHelper.calculateForward(
+                                            player.currentPosition,
+                                            seekInterval.millis,
+                                            durationMs
+                                        )
                                         player.seekTo(newPos)
                                         currentPositionMs = newPos
                                         triggerControls()
                                     }
                                 ) { isFocused ->
-                                    Text(
-                                        text = "▶ 10s",
-                                        style = LumaTheme.typography.labelSm.copy(fontWeight = FontWeight.Bold),
-                                        color = if (isFocused) LumaTheme.colors.cyan else LumaTheme.colors.textPrimary
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_action_forward_10),
+                                        contentDescription = "Forward ${seekInterval.label}",
+                                        tint = if (isFocused) LumaTheme.colors.cyan else LumaTheme.colors.textPrimary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                // Next
+                                PlayerTransportButton(
+                                    onClick = {
+                                        val maxDur = player.duration.coerceAtLeast(0L)
+                                        val newPos = (player.currentPosition + 30_000L).coerceAtMost(maxDur)
+                                        player.seekTo(newPos)
+                                        currentPositionMs = newPos
+                                        triggerControls()
+                                    }
+                                ) { isFocused ->
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_action_skip_next),
+                                        contentDescription = "Next",
+                                        tint = if (isFocused) LumaTheme.colors.cyan else LumaTheme.colors.textPrimary,
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
 
-                            // Right: Player Adjustments & Stats Toggle
+                            // Right: Player Adjustments & Active Stats Toggle
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // Skip interval cycle (Stage A)
+                                PlayerPillButton(
+                                    onClick = {
+                                        val next = seekInterval.next()
+                                        seekInterval = next
+                                        seekPreferences.setSeekInterval(next)
+                                        triggerControls()
+                                    },
+                                    text = "Skip: ${seekInterval.label}"
+                                )
+
                                 // Speed cycle
                                 PlayerPillButton(
                                     onClick = {
@@ -1036,7 +1433,8 @@ fun PlayerScreen(
                                         aspectRatioMode = aspectRatioMode.next()
                                         triggerControls()
                                     },
-                                    text = aspectRatioMode.label
+                                    text = aspectRatioMode.label,
+                                    iconRes = R.drawable.ic_action_aspect_ratio
                                 )
 
                                 // Stats for Nerds toggle
@@ -1046,50 +1444,115 @@ fun PlayerScreen(
                                         triggerControls()
                                     },
                                     text = "Stats",
+                                    iconRes = R.drawable.ic_action_analytics,
                                     isActive = showStats
                                 )
                             }
                         }
 
-                        // TV Remote D-Pad Navigation Hint Pill
+                        // TV Remote D-Pad Navigation Hint Row
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = if (playerState.isPlaying) "❚❚ Playing" else "▶ Paused",
-                                style = LumaTheme.typography.labelSm,
-                                color = LumaTheme.colors.cyan
-                            )
-
+                            // Left status dot + Direct playback label
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(LumaTheme.colors.surfaceContainerLowest.copy(alpha = 0.6f))
-                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    text = "◄ / ► Seek 10s",
-                                    style = LumaTheme.typography.labelSm,
-                                    color = LumaTheme.colors.textSecondary
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF34D399))
                                 )
+                                val statusText = if (audioDecoderName?.contains("passthrough", ignoreCase = true) == true) {
+                                    "DIRECT BITSTREAM AUDIO ACTIVE"
+                                } else {
+                                    "DIRECT PLAY • HARDWARE ACCELERATED"
+                                }
                                 Text(
-                                    text = "OK Select",
-                                    style = LumaTheme.typography.labelSm,
-                                    color = LumaTheme.colors.textSecondary
+                                    text = statusText,
+                                    style = LumaTheme.typography.labelSm.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 0.8.sp
+                                    ),
+                                    color = LumaTheme.colors.textPrimary
                                 )
-                                Text(
-                                    text = "INFO Specs",
-                                    style = LumaTheme.typography.labelSm,
-                                    color = LumaTheme.colors.cyan
-                                )
-                                Text(
-                                    text = "Back Exit",
-                                    style = LumaTheme.typography.labelSm,
-                                    color = LumaTheme.colors.textSecondary
-                                )
+                            }
+
+                            // Right key hints pill
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(LumaTheme.colors.surfaceContainerLowest.copy(alpha = 0.6f))
+                                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = "◄ / ►",
+                                        style = LumaTheme.typography.labelSm.copy(fontWeight = FontWeight.Bold),
+                                        color = LumaTheme.colors.textPrimary
+                                    )
+                                    Text(
+                                        text = "Seek ${seekInterval.label}",
+                                        style = LumaTheme.typography.labelSm,
+                                        color = LumaTheme.colors.textSecondary
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = "OK",
+                                        style = LumaTheme.typography.labelSm.copy(fontWeight = FontWeight.Bold),
+                                        color = LumaTheme.colors.textPrimary
+                                    )
+                                    Text(
+                                        text = "Pause/Resume",
+                                        style = LumaTheme.typography.labelSm,
+                                        color = LumaTheme.colors.textSecondary
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = "▲ / ▼",
+                                        style = LumaTheme.typography.labelSm.copy(fontWeight = FontWeight.Bold),
+                                        color = LumaTheme.colors.textPrimary
+                                    )
+                                    Text(
+                                        text = "Track Selection",
+                                        style = LumaTheme.typography.labelSm,
+                                        color = LumaTheme.colors.textSecondary
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = "INFO",
+                                        style = LumaTheme.typography.labelSm.copy(fontWeight = FontWeight.Bold),
+                                        color = LumaTheme.colors.cyan
+                                    )
+                                    Text(
+                                        text = "Toggle Specs",
+                                        style = LumaTheme.typography.labelSm,
+                                        color = LumaTheme.colors.textSecondary
+                                    )
+                                }
                             }
                         }
                     }
@@ -1137,6 +1600,57 @@ fun PlayerScreen(
     }
 }
 
+private fun Modifier.cyanFocusGlow(
+    isFocused: Boolean,
+    shape: Shape,
+    glowColor: Color = Color(0xFF7BD0FF),
+    glowRadius: Dp = 10.dp
+): Modifier = if (isFocused) {
+    this.drawBehind {
+        val stroke1 = 2.dp.toPx()
+        val stroke2 = 5.dp.toPx()
+        val stroke3 = glowRadius.toPx()
+        when (shape) {
+            CircleShape -> {
+                val r = size.minDimension / 2f
+                drawCircle(color = glowColor.copy(alpha = 0.12f), radius = r + stroke3)
+                drawCircle(color = glowColor.copy(alpha = 0.24f), radius = r + stroke2)
+                drawCircle(color = glowColor.copy(alpha = 0.40f), radius = r + stroke1)
+            }
+            is RoundedCornerShape -> {
+                val baseRadius = 8.dp.toPx()
+                drawRoundRect(
+                    color = glowColor.copy(alpha = 0.10f),
+                    topLeft = Offset(-stroke3, -stroke3),
+                    size = Size(size.width + stroke3 * 2, size.height + stroke3 * 2),
+                    cornerRadius = CornerRadius(baseRadius + stroke3, baseRadius + stroke3)
+                )
+                drawRoundRect(
+                    color = glowColor.copy(alpha = 0.20f),
+                    topLeft = Offset(-stroke2, -stroke2),
+                    size = Size(size.width + stroke2 * 2, size.height + stroke2 * 2),
+                    cornerRadius = CornerRadius(baseRadius + stroke2, baseRadius + stroke2)
+                )
+                drawRoundRect(
+                    color = glowColor.copy(alpha = 0.35f),
+                    topLeft = Offset(-stroke1, -stroke1),
+                    size = Size(size.width + stroke1 * 2, size.height + stroke1 * 2),
+                    cornerRadius = CornerRadius(baseRadius + stroke1, baseRadius + stroke1)
+                )
+            }
+            else -> {
+                drawRect(
+                    color = glowColor.copy(alpha = 0.20f),
+                    topLeft = Offset(-stroke2, -stroke2),
+                    size = Size(size.width + stroke2 * 2, size.height + stroke2 * 2)
+                )
+            }
+        }
+    }
+} else {
+    this
+}
+
 @Composable
 private fun PlayerTransportButton(
     onClick: () -> Unit,
@@ -1148,23 +1662,22 @@ private fun PlayerTransportButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isFocused) (if (isPrimary) 1.12f else 1.08f) else 1.0f,
+        targetValue = if (isFocused) (if (isPrimary) 1.10f else 1.06f) else 1.0f,
         animationSpec = tween(150),
         label = "button_scale"
     )
 
     val shape = CircleShape
-    val size = if (isPrimary) 56.dp else 44.dp
+    val size = if (isPrimary) 56.dp else 40.dp
     val bgColor = when {
-        isFocused && isPrimary -> LumaTheme.colors.cyan
+        isPrimary -> if (isFocused) LumaTheme.colors.cyan else LumaTheme.colors.cyan.copy(alpha = 0.9f)
         isFocused -> LumaTheme.colors.surfaceContainerHighest
-        isPrimary -> LumaTheme.colors.surfaceContainerHigh.copy(alpha = 0.9f)
-        else -> LumaTheme.colors.surfaceContainerHigh.copy(alpha = 0.75f)
+        else -> LumaTheme.colors.surfaceContainerHigh.copy(alpha = 0.8f)
     }
     val borderColor = when {
         isFocused && isPrimary -> Color.White
         isFocused -> LumaTheme.colors.cyan
-        isPrimary -> LumaTheme.colors.cyan.copy(alpha = 0.5f)
+        isPrimary -> LumaTheme.colors.cyan
         else -> LumaTheme.colors.outlineVariant.copy(alpha = 0.4f)
     }
 
@@ -1172,8 +1685,13 @@ private fun PlayerTransportButton(
         modifier = modifier
             .size(size)
             .scale(scale)
-            .clip(shape)
-            .background(bgColor)
+            .cyanFocusGlow(
+                isFocused = isFocused,
+                shape = shape,
+                glowColor = LumaTheme.colors.cyan,
+                glowRadius = if (isPrimary) 14.dp else 9.dp
+            )
+            .background(bgColor, shape)
             .border(if (isFocused) 2.dp else 1.dp, borderColor, shape)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .clickable(
@@ -1201,7 +1719,7 @@ private fun PlayerPillButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isFocused) 1.06f else 1.0f,
+        targetValue = if (isFocused) 1.05f else 1.0f,
         animationSpec = tween(150),
         label = "pill_scale"
     )
@@ -1215,20 +1733,25 @@ private fun PlayerPillButton(
     val borderColor = when {
         isFocused -> LumaTheme.colors.cyan
         isActive -> LumaTheme.colors.cyan.copy(alpha = 0.6f)
-        else -> LumaTheme.colors.outlineVariant.copy(alpha = 0.4f)
+        else -> LumaTheme.colors.outlineVariant.copy(alpha = 0.35f)
     }
     val contentColor = when {
         isFocused -> LumaTheme.colors.cyan
         isActive -> LumaTheme.colors.cyan
-        else -> LumaTheme.colors.textSecondary
+        else -> LumaTheme.colors.textPrimary
     }
 
     Box(
         modifier = modifier
             .height(36.dp)
             .scale(scale)
-            .clip(shape)
-            .background(bgColor)
+            .cyanFocusGlow(
+                isFocused = isFocused,
+                shape = shape,
+                glowColor = LumaTheme.colors.cyan,
+                glowRadius = 8.dp
+            )
+            .background(bgColor, shape)
             .border(if (isFocused) 2.dp else 1.dp, borderColor, shape)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .clickable(
@@ -1237,18 +1760,18 @@ private fun PlayerPillButton(
                 onClick = onClick
             )
             .focusable(interactionSource = interactionSource)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             if (iconRes != null) {
                 Icon(
                     painter = painterResource(id = iconRes),
                     contentDescription = null,
-                    tint = contentColor,
+                    tint = LumaTheme.colors.cyan,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -1257,7 +1780,8 @@ private fun PlayerPillButton(
                 style = LumaTheme.typography.labelMd.copy(fontWeight = FontWeight.SemiBold),
                 color = contentColor,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false)
             )
         }
     }

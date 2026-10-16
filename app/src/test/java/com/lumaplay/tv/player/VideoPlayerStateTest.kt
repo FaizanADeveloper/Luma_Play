@@ -99,4 +99,36 @@ class VideoPlayerStateTest {
         assertEquals("00:00", state.formattedCurrentPosition)
         assertEquals("00:00", state.formattedDuration)
     }
+
+    @Test
+    fun testDeferredScrubbingProgressAndPosition() {
+        val deferred = com.lumaplay.tv.player.seek.DeferredSeekState(
+            isScrubbing = true,
+            previewPositionMs = 45_000L,
+            originalPositionMs = 10_000L,
+            durationMs = 60_000L
+        )
+        val state = VideoPlayerState(
+            currentPositionMs = 10_000L,
+            durationMs = 60_000L,
+            deferredSeekState = deferred
+        )
+
+        // While scrubbing, progress and formatted position reflect preview, not currentPosition
+        assertEquals(0.75f, state.progress, 0.001f)
+        assertEquals("00:45", state.formattedCurrentPosition)
+        assertEquals("01:00", state.formattedDuration)
+    }
+
+    @Test
+    fun testSeekIntervalDefaultAndConfigurable() {
+        val defaultState = VideoPlayerState()
+        assertEquals(com.lumaplay.tv.player.seek.SeekInterval.TEN, defaultState.seekInterval)
+
+        val customState = VideoPlayerState(
+            seekInterval = com.lumaplay.tv.player.seek.SeekInterval.THIRTY
+        )
+        assertEquals(com.lumaplay.tv.player.seek.SeekInterval.THIRTY, customState.seekInterval)
+        assertEquals("30s", customState.seekInterval.label)
+    }
 }

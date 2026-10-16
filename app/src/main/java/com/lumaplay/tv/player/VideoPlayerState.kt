@@ -3,11 +3,14 @@ package com.lumaplay.tv.player
 import com.lumaplay.tv.player.diagnostics.AspectRatioMode
 import com.lumaplay.tv.player.diagnostics.PlaybackSpeed
 import com.lumaplay.tv.player.diagnostics.VideoTelemetryState
+import com.lumaplay.tv.player.seek.DeferredSeekState
+import com.lumaplay.tv.player.seek.SeekInterval
 
 /**
  * State holder for fullscreen video playback.
  *
- * Tracks transport progress, buffering, error messages, and OSD visibility.
+ * Tracks transport progress, buffering, error messages, OSD visibility,
+ * and deferred timeline scrubbing state.
  */
 data class VideoPlayerState(
     val isPlaying: Boolean = false,
@@ -21,7 +24,9 @@ data class VideoPlayerState(
     val playbackSpeed: Float = PlaybackSpeed.DEFAULT_SPEED,
     val aspectRatioMode: AspectRatioMode = AspectRatioMode.FIT,
     val showStats: Boolean = false,
-    val telemetry: VideoTelemetryState = VideoTelemetryState.EMPTY
+    val telemetry: VideoTelemetryState = VideoTelemetryState.EMPTY,
+    val seekInterval: SeekInterval = SeekInterval.DEFAULT,
+    val deferredSeekState: DeferredSeekState = DeferredSeekState.IDLE
 ) {
     /**
      * Normalized buffered progress value [0.0f, 1.0f] for seek bars.
@@ -32,21 +37,28 @@ data class VideoPlayerState(
         } else {
             0f
         }
+
     /**
      * Normalized progress value [0.0f, 1.0f] for seek bars and progress indicators.
+     * When actively scrubbing, reflects the preview position.
      */
     val progress: Float
-        get() = if (durationMs > 0) {
-            (currentPositionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
-        } else {
-            0f
+        get() = when {
+            deferredSeekState.isScrubbing -> deferredSeekState.progress
+            durationMs > 0 -> (currentPositionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
+            else -> 0f
         }
 
     /**
      * Elapsed playback time formatted as HH:mm:ss or mm:ss.
+     * When actively scrubbing, reflects the preview position.
      */
     val formattedCurrentPosition: String
-        get() = formatTime(currentPositionMs)
+        get() = if (deferredSeekState.isScrubbing) {
+            deferredSeekState.formattedPreviewPosition
+        } else {
+            formatTime(currentPositionMs)
+        }
 
     /**
      * Total video duration formatted as HH:mm:ss or mm:ss.
