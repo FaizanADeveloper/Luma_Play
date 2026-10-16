@@ -255,6 +255,21 @@ class TrackSelectionDialogTest {
     }
 
     @Test
+    fun testSubtitleOnlyOffOptionPresent() {
+        val offTrack = SubtitleTrackItem.off(isSelected = true)
+        val state = TrackSelectionUiState(
+            trackType = TrackType.SUBTITLE,
+            subtitleTracks = listOf(offTrack)
+        )
+
+        assertTrue(state.isSubtitlesOff)
+        assertNull(state.selectedSubtitleTrack)
+        assertEquals(0, state.realSubtitleCount)
+        assertEquals(0, state.activeTrackCount)
+        assertFalse(state.hasTracks)
+    }
+
+    @Test
     fun testTrackTypeToggleChangesActiveTrackCount() {
         val audioTracks = listOf(
             createAudioTrack(groupIndex = 0, trackIndex = 0),

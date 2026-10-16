@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +44,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -115,7 +117,7 @@ data class TrackSelectionUiState(
     val hasTracks: Boolean
         get() = when (trackType) {
             TrackType.AUDIO -> audioTracks.isNotEmpty()
-            TrackType.SUBTITLE -> subtitleTracks.isNotEmpty()
+            TrackType.SUBTITLE -> realSubtitleCount > 0
         }
 }
 
@@ -219,16 +221,14 @@ fun TrackSelectionDialog(
         runCatching { initialFocusRequester.requestFocus() }
     }
 
-    // Modal Scrim Backdrop
+    // Modal Scrim Backdrop (Touch-only tap gesture; immune to D-pad focus escape)
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.75f))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = { dismissWithReturnFocus() }
-            ),
+            .pointerInput(Unit) {
+                detectTapGestures { dismissWithReturnFocus() }
+            },
         contentAlignment = Alignment.Center
     ) {
         // Modal Card Container (approx 16dp rounded corners per Stitch Level 2)
@@ -249,11 +249,9 @@ fun TrackSelectionDialog(
                         color = LumaTheme.colors.outlineVariant.copy(alpha = 0.5f),
                         shape = RoundedCornerShape(16.dp)
                     )
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { /* prevent backdrop click through */ }
-                    )
+                    .pointerInput(Unit) {
+                        detectTapGestures { /* consume tap inside card */ }
+                    }
                     .padding(20.dp)
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -306,7 +304,8 @@ fun TrackSelectionDialog(
                             }
                         }
                         TrackType.SUBTITLE -> {
-                            if (subtitleTracks.isEmpty()) {
+                            val realCount = subtitleTracks.count { !it.isOff }
+                            if (realCount == 0) {
                                 TrackEmptyState(
                                     message = "No subtitle tracks available",
                                     subMessage = "No embedded or external subtitle tracks were found for this video.",
@@ -393,7 +392,7 @@ private fun TrackDialogHeader(
         }
         TrackType.SUBTITLE -> {
             val realCount = subtitleTracks.count { !it.isOff }
-            if (realCount > 0) "$realCount Available" else "Off"
+            if (realCount > 0) "$realCount Available" else "None"
         }
     }
 

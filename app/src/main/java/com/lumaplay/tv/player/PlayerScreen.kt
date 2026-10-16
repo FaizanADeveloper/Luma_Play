@@ -101,6 +101,13 @@ import com.lumaplay.tv.player.diagnostics.VideoTelemetryState
 import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import com.lumaplay.tv.data.util.MediaSpecsExtractor
+import androidx.annotation.DrawableRes
+import com.lumaplay.tv.player.track.AudioTrackItem
+import com.lumaplay.tv.player.track.AudioTrackSelectionDialog
+import com.lumaplay.tv.player.track.ExternalSubtitleHelper
+import com.lumaplay.tv.player.track.SubtitleTrackItem
+import com.lumaplay.tv.player.track.SubtitleTrackSelectionDialog
+import com.lumaplay.tv.player.track.TrackHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -196,9 +203,15 @@ fun PlayerScreen(
         lastInteractionTime = System.currentTimeMillis()
     }
 
-    // Auto-hide controls after 3 seconds while playing, suspended while stats overlay is active
-    LaunchedEffect(showControls, isPlaying, lastInteractionTime, showStats) {
-        if (showControls && isPlaying && !showStats) {
+    // Phase 5.2D: Dialog visibility and TV remote focus restoration
+    var showAudioDialog by remember { mutableStateOf(false) }
+    var showSubtitleDialog by remember { mutableStateOf(false) }
+    val audioPillFocusRequester = remember { FocusRequester() }
+    val subtitlePillFocusRequester = remember { FocusRequester() }
+
+    // Auto-hide controls after 3 seconds while playing, suspended while stats overlay or track dialogs are active
+    LaunchedEffect(showControls, isPlaying, lastInteractionTime, showStats, showAudioDialog, showSubtitleDialog) {
+        if (showControls && isPlaying && !showStats && !showAudioDialog && !showSubtitleDialog) {
             delay(3000L)
             showControls = false
         }
@@ -210,6 +223,34 @@ fun PlayerScreen(
             delay(50L)
             runCatching { playPauseFocusRequester.requestFocus() }
         }
+    }
+
+    // Phase 5.2: Track state observed from Media3 player
+    var audioTracks by remember { mutableStateOf<List<AudioTrackItem>>(emptyList()) }
+    var subtitleTracks by remember { mutableStateOf<List<SubtitleTrackItem>>(emptyList()) }
+
+    val activeAudioTrack = remember(audioTracks) {
+        audioTracks.firstOrNull { it.isSelected }
+    }
+    val audioPillText = remember(activeAudioTrack) {
+        activeAudioTrack?.osdSummary ?: "Audio"
+    }
+
+    val activeSubtitleTrack = remember(subtitleTracks) {
+        subtitleTracks.firstOrNull { it.isSelected }
+    }
+    val subtitlePillText = remember(activeSubtitleTrack) {
+        activeSubtitleTrack?.osdSummary ?: "Subtitles Off"
+    }
+
+    LaunchedEffect(audioTracks, subtitleTracks) {
+        val activeAudio = audioTracks.firstOrNull { it.isSelected }
+        val activeSubtitle = subtitleTracks.firstOrNull { it.isSelected && !it.isOff }
+        Log.d(
+            "LumaPlayTracks",
+            "Observed tracks: ${audioTracks.size} audio (active=${activeAudio?.displayName}), " +
+                "${subtitleTracks.size} subtitles (active=${activeSubtitle?.displayName ?: "Off"})"
+        )
     }
 
     // Single ExoPlayer instance managed across the screen lifecycle
@@ -224,11 +265,17 @@ fun PlayerScreen(
             .setUsage(C.USAGE_MEDIA)
             .build()
 
+        val subtitleConfigs = ExternalSubtitleHelper.discoverSubtitleConfigurations(video)
+        val mediaItem = MediaItem.Builder()
+            .setUri(video.contentUri)
+            .setSubtitleConfigurations(subtitleConfigs)
+            .build()
+
         ExoPlayer.Builder(context, renderersFactory)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .build().apply {
-                setMediaItem(MediaItem.fromUri(video.contentUri))
+                setMediaItem(mediaItem)
                 prepare()
                 playWhenReady = true
             }
@@ -357,6 +404,10 @@ fun PlayerScreen(
             }
 
             override fun onTracksChanged(tracks: Tracks) {
+                // Update reactive audio & subtitle track collections from authoritative Media3 state
+                audioTracks = TrackHelper.parseAudioTracks(tracks)
+                subtitleTracks = TrackHelper.parseSubtitleTracks(tracks, includeOffOption = true)
+
                 if (media3FrameRate <= 0f) {
                     val playerFps = player.videoFormat?.frameRate
                     if (playerFps != null && playerFps > 0f) {
@@ -443,13 +494,26 @@ fun PlayerScreen(
         }
     }
 
-    // Handle system Back button: dismiss stats overlay first if open
+    // Handle system Back button: dismiss track dialogs or stats overlay first if open
     BackHandler(enabled = true) {
-        if (showStats) {
-            showStats = false
-            triggerControls()
-        } else {
-            onBack()
+        when {
+            showAudioDialog -> {
+                showAudioDialog = false
+                triggerControls()
+                runCatching { audioPillFocusRequester.requestFocus() }
+            }
+            showSubtitleDialog -> {
+                showSubtitleDialog = false
+                triggerControls()
+                runCatching { subtitlePillFocusRequester.requestFocus() }
+            }
+            showStats -> {
+                showStats = false
+                triggerControls()
+            }
+            else -> {
+                onBack()
+            }
         }
     }
 
@@ -497,13 +561,28 @@ fun PlayerScreen(
                 if (!showControls) {
                     when (keyCode) {
                         KeyEvent.KEYCODE_BACK -> {
-                            if (showStats) {
-                                showStats = false
-                                triggerControls()
-                                true
-                            } else {
-                                onBack()
-                                true
+                            when {
+                                showAudioDialog -> {
+                                    showAudioDialog = false
+                                    triggerControls()
+                                    runCatching { audioPillFocusRequester.requestFocus() }
+                                    true
+                                }
+                                showSubtitleDialog -> {
+                                    showSubtitleDialog = false
+                                    triggerControls()
+                                    runCatching { subtitlePillFocusRequester.requestFocus() }
+                                    true
+                                }
+                                showStats -> {
+                                    showStats = false
+                                    triggerControls()
+                                    true
+                                }
+                                else -> {
+                                    onBack()
+                                    true
+                                }
                             }
                         }
                         KeyEvent.KEYCODE_INFO -> {
@@ -558,13 +637,28 @@ fun PlayerScreen(
                 } else {
                     when (keyCode) {
                         KeyEvent.KEYCODE_BACK -> {
-                            if (showStats) {
-                                showStats = false
-                                triggerControls()
-                                true
-                            } else {
-                                onBack()
-                                true
+                            when {
+                                showAudioDialog -> {
+                                    showAudioDialog = false
+                                    triggerControls()
+                                    runCatching { audioPillFocusRequester.requestFocus() }
+                                    true
+                                }
+                                showSubtitleDialog -> {
+                                    showSubtitleDialog = false
+                                    triggerControls()
+                                    runCatching { subtitlePillFocusRequester.requestFocus() }
+                                    true
+                                }
+                                showStats -> {
+                                    showStats = false
+                                    triggerControls()
+                                    true
+                                }
+                                else -> {
+                                    onBack()
+                                    true
+                                }
                             }
                         }
                         KeyEvent.KEYCODE_INFO -> {
@@ -822,12 +916,45 @@ fun PlayerScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Left: Elapsed / Total Duration
-                            Text(
-                                text = "${playerState.formattedCurrentPosition} / ${playerState.formattedDuration}",
-                                style = LumaTheme.typography.labelMd.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
-                                color = LumaTheme.colors.textPrimary
-                            )
+                            // Left: Duration & Track Selection Pills (Audio & Subtitles)
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Elapsed / Total Duration
+                                Text(
+                                    text = "${playerState.formattedCurrentPosition} / ${playerState.formattedDuration}",
+                                    style = LumaTheme.typography.labelMd.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
+                                    color = LumaTheme.colors.textPrimary
+                                )
+
+                                // Audio Track Pill
+                                PlayerPillButton(
+                                    onClick = {
+                                        showAudioDialog = true
+                                        showSubtitleDialog = false
+                                        triggerControls()
+                                    },
+                                    text = audioPillText,
+                                    iconRes = R.drawable.ic_action_volume_up,
+                                    isActive = showAudioDialog,
+                                    focusRequester = audioPillFocusRequester
+                                )
+
+                                // Subtitle Track Pill
+                                val isSubtitleActive = activeSubtitleTrack != null && !activeSubtitleTrack.isOff
+                                PlayerPillButton(
+                                    onClick = {
+                                        showSubtitleDialog = true
+                                        showAudioDialog = false
+                                        triggerControls()
+                                    },
+                                    text = subtitlePillText,
+                                    iconRes = if (isSubtitleActive) R.drawable.ic_action_subtitles else R.drawable.ic_action_subtitles_off,
+                                    isActive = showSubtitleDialog || isSubtitleActive,
+                                    focusRequester = subtitlePillFocusRequester
+                                )
+                            }
 
                             // Center: Primary Transport Controls (Remote Snap Zone)
                             Row(
@@ -979,6 +1106,34 @@ fun PlayerScreen(
                 .tvSafePadding()
                 .padding(top = 72.dp, end = 24.dp)
         )
+
+        // --- 6. Audio Track Selection Dialog ---
+        AudioTrackSelectionDialog(
+            isVisible = showAudioDialog,
+            tracks = audioTracks,
+            onTrackSelected = { track ->
+                player.trackSelectionParameters = TrackHelper.selectAudioTrack(player.trackSelectionParameters, track)
+            },
+            onDismiss = {
+                showAudioDialog = false
+                triggerControls()
+            },
+            returnFocusRequester = audioPillFocusRequester
+        )
+
+        // --- 7. Subtitle Track Selection Dialog ---
+        SubtitleTrackSelectionDialog(
+            isVisible = showSubtitleDialog,
+            tracks = subtitleTracks,
+            onTrackSelected = { track ->
+                player.trackSelectionParameters = TrackHelper.selectSubtitleTrack(player.trackSelectionParameters, track)
+            },
+            onDismiss = {
+                showSubtitleDialog = false
+                triggerControls()
+            },
+            returnFocusRequester = subtitlePillFocusRequester
+        )
     }
 }
 
@@ -1033,12 +1188,15 @@ private fun PlayerTransportButton(
     }
 }
 
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun PlayerPillButton(
     onClick: () -> Unit,
     text: String,
     modifier: Modifier = Modifier,
-    isActive: Boolean = false
+    isActive: Boolean = false,
+    @DrawableRes iconRes: Int? = null,
+    focusRequester: FocusRequester? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -1059,7 +1217,7 @@ private fun PlayerPillButton(
         isActive -> LumaTheme.colors.cyan.copy(alpha = 0.6f)
         else -> LumaTheme.colors.outlineVariant.copy(alpha = 0.4f)
     }
-    val textColor = when {
+    val contentColor = when {
         isFocused -> LumaTheme.colors.cyan
         isActive -> LumaTheme.colors.cyan
         else -> LumaTheme.colors.textSecondary
@@ -1072,6 +1230,7 @@ private fun PlayerPillButton(
             .clip(shape)
             .background(bgColor)
             .border(if (isFocused) 2.dp else 1.dp, borderColor, shape)
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -1081,11 +1240,26 @@ private fun PlayerPillButton(
             .padding(horizontal = 12.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            style = LumaTheme.typography.labelMd.copy(fontWeight = FontWeight.SemiBold),
-            color = textColor
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            if (iconRes != null) {
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            Text(
+                text = text,
+                style = LumaTheme.typography.labelMd.copy(fontWeight = FontWeight.SemiBold),
+                color = contentColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
