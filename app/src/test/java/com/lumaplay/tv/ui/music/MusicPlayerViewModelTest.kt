@@ -382,6 +382,14 @@ class MusicPlayerViewModelTest {
         viewModel.selectCategory(MusicCategory.ARTISTS)
         val artistsSuccess = viewModel.libraryState.value as MusicLibraryUiState.Success
         assertEquals(MusicCategory.ARTISTS, artistsSuccess.selectedCategory)
+
+        viewModel.selectCategory(MusicCategory.PLAYLISTS)
+        val playlistsSuccess = viewModel.libraryState.value as MusicLibraryUiState.Success
+        assertEquals(MusicCategory.PLAYLISTS, playlistsSuccess.selectedCategory)
+
+        viewModel.selectCategory(MusicCategory.RECENTLY_PLAYED)
+        val recentlyPlayedSuccess = viewModel.libraryState.value as MusicLibraryUiState.Success
+        assertEquals(MusicCategory.RECENTLY_PLAYED, recentlyPlayedSuccess.selectedCategory)
     }
 
     // 12. Category selection is a no-op when library state is not Success.

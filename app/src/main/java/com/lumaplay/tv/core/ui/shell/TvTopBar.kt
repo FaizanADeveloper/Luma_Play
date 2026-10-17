@@ -63,7 +63,7 @@ fun TvTopBar(
             override fun onDisplayAdded(displayId: Int) = Unit
             override fun onDisplayRemoved(displayId: Int) = Unit
             override fun onDisplayChanged(displayId: Int) {
-                displayMode = DisplayModeHelper.getDisplayModeLabel(context)
+                displayMode = DisplayModeHelper.getDisplayModeLabel(context, forceRefresh = true)
             }
         }
         displayManager?.registerDisplayListener(listener, Handler(Looper.getMainLooper()))

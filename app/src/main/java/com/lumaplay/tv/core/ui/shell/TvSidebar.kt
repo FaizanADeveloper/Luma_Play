@@ -194,6 +194,7 @@ fun TvSidebar(
                                     isItemFocused = focusState.isFocused
                                 }
                                 .focusProperties {
+                                    left = FocusRequester.Cancel
                                     if (destination == TvNavDestination.Home) {
                                         up = FocusRequester.Cancel
                                     }

@@ -1,5 +1,11 @@
 package com.lumaplay.tv.ui.music
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -64,6 +70,7 @@ import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Glow
 import androidx.tv.material3.Icon
+import androidx.tv.material3.LocalContentColor
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.lumaplay.tv.R
@@ -108,11 +115,21 @@ fun MusicScreen(
     val songsChipFocusRequester = contentFocusRequester ?: remember { FocusRequester() }
     val albumsChipFocusRequester = remember { FocusRequester() }
     val artistsChipFocusRequester = remember { FocusRequester() }
+    val playlistsChipFocusRequester = remember { FocusRequester() }
+    val recentlyPlayedChipFocusRequester = remember { FocusRequester() }
 
     val activeChipFocusRequester = when ((libraryState as? MusicLibraryUiState.Success)?.selectedCategory) {
         MusicCategory.ALBUMS -> albumsChipFocusRequester
         MusicCategory.ARTISTS -> artistsChipFocusRequester
+        MusicCategory.PLAYLISTS -> playlistsChipFocusRequester
+        MusicCategory.RECENTLY_PLAYED -> recentlyPlayedChipFocusRequester
         else -> songsChipFocusRequester
+    }
+
+    val activeContentFocusRequester = when ((libraryState as? MusicLibraryUiState.Success)?.selectedCategory) {
+        MusicCategory.ALBUMS -> firstAlbumFocusRequester
+        MusicCategory.ARTISTS -> firstArtistFocusRequester
+        else -> firstTrackFocusRequester
     }
 
     // Direct initial focus handling when entering Music Screen while idle
@@ -160,9 +177,12 @@ fun MusicScreen(
                     firstAlbumFocusRequester = firstAlbumFocusRequester,
                     firstArtistFocusRequester = firstArtistFocusRequester,
                     activeChipFocusRequester = activeChipFocusRequester,
+                    activeContentFocusRequester = activeContentFocusRequester,
                     songsChipFocusRequester = songsChipFocusRequester,
                     albumsChipFocusRequester = albumsChipFocusRequester,
-                    artistsChipFocusRequester = artistsChipFocusRequester
+                    artistsChipFocusRequester = artistsChipFocusRequester,
+                    playlistsChipFocusRequester = playlistsChipFocusRequester,
+                    recentlyPlayedChipFocusRequester = recentlyPlayedChipFocusRequester
                 )
             }
         }
@@ -170,7 +190,7 @@ fun MusicScreen(
 }
 
 // -----------------------------------------------------------------------------
-// Dual-Panel Layout (Now Playing Hero + Music Browsing Panel)
+// Layout Restructuring: Three Vertical Zones (Top Navigation, Dual Panels, Reserved Albums)
 // -----------------------------------------------------------------------------
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -185,54 +205,249 @@ private fun MusicDualPanelContent(
     firstAlbumFocusRequester: FocusRequester,
     firstArtistFocusRequester: FocusRequester,
     activeChipFocusRequester: FocusRequester,
+    activeContentFocusRequester: FocusRequester,
     songsChipFocusRequester: FocusRequester,
     albumsChipFocusRequester: FocusRequester,
-    artistsChipFocusRequester: FocusRequester
+    artistsChipFocusRequester: FocusRequester,
+    playlistsChipFocusRequester: FocusRequester,
+    recentlyPlayedChipFocusRequester: FocusRequester
 ) {
     val spacing = LumaTheme.spacing
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(
                 start = spacing.tvSafeMargin,
                 end = spacing.tvSafeMargin,
-                top = spacing.spaceMd,
-                bottom = spacing.spaceMd
+                top = spacing.spaceSm,
+                bottom = spacing.spaceSm
             ),
-        horizontalArrangement = Arrangement.spacedBy(spacing.gutter)
+        verticalArrangement = Arrangement.spacedBy(spacing.spaceSm)
     ) {
-        // --- Left Panel: Now Playing Focus Card (42% width) ---
-        NowPlayingPanel(
-            playbackState = playbackState,
-            viewModel = viewModel,
+        // --- Zone 1: Full-Width Top Category Navigation Row ---
+        MusicTopNavigationRow(
+            selectedCategory = librarySuccessState.selectedCategory,
+            tracksCount = librarySuccessState.tracks.size,
+            albumsCount = librarySuccessState.albums.size,
+            artistsCount = librarySuccessState.artists.size,
+            onSelectCategory = { viewModel.selectCategory(it) },
             sidebarMusicFocusRequester = sidebarMusicFocusRequester,
             playButtonFocusRequester = playButtonFocusRequester,
-            firstTrackFocusRequester = firstTrackFocusRequester,
-            activeChipFocusRequester = activeChipFocusRequester,
-            modifier = Modifier
-                .weight(0.42f)
-                .fillMaxHeight()
-        )
-
-        // --- Right Panel: Music Browsing (Songs, Albums, Artists) (58% width) ---
-        MusicBrowsingPanel(
-            librarySuccessState = librarySuccessState,
-            playbackState = playbackState,
-            viewModel = viewModel,
-            playButtonFocusRequester = playButtonFocusRequester,
-            firstTrackFocusRequester = firstTrackFocusRequester,
-            firstAlbumFocusRequester = firstAlbumFocusRequester,
-            firstArtistFocusRequester = firstArtistFocusRequester,
-            activeChipFocusRequester = activeChipFocusRequester,
+            activeContentFocusRequester = activeContentFocusRequester,
             songsChipFocusRequester = songsChipFocusRequester,
             albumsChipFocusRequester = albumsChipFocusRequester,
             artistsChipFocusRequester = artistsChipFocusRequester,
-            modifier = Modifier
-                .weight(0.58f)
-                .fillMaxHeight()
+            playlistsChipFocusRequester = playlistsChipFocusRequester,
+            recentlyPlayedChipFocusRequester = recentlyPlayedChipFocusRequester
         )
+
+        // --- Zone 2: Main Dual-Panel 10-Foot Experience (~5/12 and ~7/12) ---
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.gutter)
+        ) {
+            // Left Panel: Now Playing Focus Card (5/12 width, ~41.7%)
+            NowPlayingPanel(
+                playbackState = playbackState,
+                viewModel = viewModel,
+                sidebarMusicFocusRequester = sidebarMusicFocusRequester,
+                playButtonFocusRequester = playButtonFocusRequester,
+                firstTrackFocusRequester = firstTrackFocusRequester,
+                activeChipFocusRequester = activeChipFocusRequester,
+                activeContentFocusRequester = activeContentFocusRequester,
+                modifier = Modifier
+                    .weight(5f)
+                    .fillMaxHeight()
+            )
+
+            // Right Panel: Music Browsing (Songs, Albums, Artists, Playlists, Recently Played) (7/12 width, ~58.3%)
+            MusicBrowsingPanel(
+                librarySuccessState = librarySuccessState,
+                playbackState = playbackState,
+                viewModel = viewModel,
+                playButtonFocusRequester = playButtonFocusRequester,
+                firstTrackFocusRequester = firstTrackFocusRequester,
+                firstAlbumFocusRequester = firstAlbumFocusRequester,
+                firstArtistFocusRequester = firstArtistFocusRequester,
+                activeChipFocusRequester = activeChipFocusRequester,
+                modifier = Modifier
+                    .weight(7f)
+                    .fillMaxHeight()
+            )
+        }
+
+        // --- Zone 3: Reserved Region for Stage 4 Recently Played Albums Carousel ---
+        ReservedRecentlyPlayedAlbumsRegion()
     }
+}
+
+/**
+ * Zone 1: Full-width top category navigation row containing the 5 reference categories
+ * and the Audio DSP Direct Bitstream indicator matching Google Stitch reference.
+ */
+@OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
+@Composable
+private fun MusicTopNavigationRow(
+    selectedCategory: MusicCategory,
+    tracksCount: Int,
+    albumsCount: Int,
+    artistsCount: Int,
+    onSelectCategory: (MusicCategory) -> Unit,
+    sidebarMusicFocusRequester: FocusRequester,
+    playButtonFocusRequester: FocusRequester,
+    activeContentFocusRequester: FocusRequester,
+    songsChipFocusRequester: FocusRequester,
+    albumsChipFocusRequester: FocusRequester,
+    artistsChipFocusRequester: FocusRequester,
+    playlistsChipFocusRequester: FocusRequester,
+    recentlyPlayedChipFocusRequester: FocusRequester,
+    modifier: Modifier = Modifier
+) {
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(42.dp)
+            .focusGroup()
+    ) {
+        val isCompactWidth = maxWidth < 760.dp
+
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left section: 5 Remote Focusable Category Chips matching Google Stitch reference
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CategoryChip(
+                    label = "All Songs",
+                    count = tracksCount,
+                    isSelected = selectedCategory == MusicCategory.SONGS,
+                    onClick = { onSelectCategory(MusicCategory.SONGS) },
+                    focusRequester = songsChipFocusRequester,
+                    modifier = Modifier.focusProperties {
+                        left = sidebarMusicFocusRequester
+                        right = albumsChipFocusRequester
+                        down = playButtonFocusRequester
+                    }
+                )
+
+                CategoryChip(
+                    label = "Albums",
+                    count = albumsCount,
+                    isSelected = selectedCategory == MusicCategory.ALBUMS,
+                    onClick = { onSelectCategory(MusicCategory.ALBUMS) },
+                    focusRequester = albumsChipFocusRequester,
+                    modifier = Modifier.focusProperties {
+                        left = songsChipFocusRequester
+                        right = artistsChipFocusRequester
+                        down = playButtonFocusRequester
+                    }
+                )
+
+                CategoryChip(
+                    label = "Artists",
+                    count = artistsCount,
+                    isSelected = selectedCategory == MusicCategory.ARTISTS,
+                    onClick = { onSelectCategory(MusicCategory.ARTISTS) },
+                    focusRequester = artistsChipFocusRequester,
+                    modifier = Modifier.focusProperties {
+                        left = albumsChipFocusRequester
+                        right = playlistsChipFocusRequester
+                        down = activeContentFocusRequester
+                    }
+                )
+
+                CategoryChip(
+                    label = "Playlists",
+                    count = null,
+                    isSelected = selectedCategory == MusicCategory.PLAYLISTS,
+                    onClick = { onSelectCategory(MusicCategory.PLAYLISTS) },
+                    focusRequester = playlistsChipFocusRequester,
+                    modifier = Modifier.focusProperties {
+                        left = artistsChipFocusRequester
+                        right = recentlyPlayedChipFocusRequester
+                        down = activeContentFocusRequester
+                    }
+                )
+
+                CategoryChip(
+                    label = "Recently Played",
+                    count = null,
+                    isSelected = selectedCategory == MusicCategory.RECENTLY_PLAYED,
+                    onClick = { onSelectCategory(MusicCategory.RECENTLY_PLAYED) },
+                    focusRequester = recentlyPlayedChipFocusRequester,
+                    modifier = Modifier.focusProperties {
+                        left = playlistsChipFocusRequester
+                        right = FocusRequester.Cancel
+                        down = activeContentFocusRequester
+                    }
+                )
+            }
+
+            // Right section: Audio DSP: Direct Bitstream Status Indicator (compact icon when width < 760dp)
+            AudioDspIndicator(compact = isCompactWidth)
+        }
+    }
+}
+
+/**
+ * Visual status indicator badge for audio direct bitstream DSP matching Google Stitch reference.
+ * Supports compact icon-only presentation when horizontal space is constrained (e.g. sidebar expanded).
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun AudioDspIndicator(
+    compact: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    val colors = LumaTheme.colors
+    Row(
+        modifier = modifier
+            .height(38.dp)
+            .clip(LumaTheme.shapes.medium)
+            .background(colors.surfaceContainerLow)
+            .padding(
+                horizontal = if (compact) 10.dp else 12.dp,
+                vertical = 8.dp
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_action_graphic_eq),
+            contentDescription = if (compact) "Audio DSP: Direct Bitstream" else null,
+            modifier = Modifier.size(16.dp),
+            tint = colors.cyan
+        )
+        if (!compact) {
+            Text(
+                text = "AUDIO DSP: DIRECT BITSTREAM",
+                style = LumaTheme.typography.labelSm,
+                color = colors.textSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+/**
+ * Zone 3: Reserved bottom region establishing the structural anchor for the subsequent
+ * Stage 4 Recently Played Albums implementation without introducing viewport clipping.
+ */
+@Composable
+private fun ReservedRecentlyPlayedAlbumsRegion(
+    modifier: Modifier = Modifier
+) {
+    // Structural placeholder for Stage 4 Recently Played Albums carousel.
+    // Preserved as zero-height layout node during Stage 1 to prevent viewport clipping.
+    Spacer(modifier = modifier)
 }
 
 // -----------------------------------------------------------------------------
@@ -248,6 +463,7 @@ private fun NowPlayingPanel(
     playButtonFocusRequester: FocusRequester,
     firstTrackFocusRequester: FocusRequester,
     activeChipFocusRequester: FocusRequester,
+    activeContentFocusRequester: FocusRequester,
     modifier: Modifier = Modifier
 ) {
     val currentTrack = playbackState.currentTrack
@@ -264,373 +480,403 @@ private fun NowPlayingPanel(
     val nextButtonFocusRequester = remember { FocusRequester() }
     val repeatButtonFocusRequester = remember { FocusRequester() }
 
-    Column(
+    BoxWithConstraints(
         modifier = modifier
             .focusGroup()
             .clip(LumaTheme.shapes.large)
             .background(colors.surfaceContainerLow)
-            .padding(spacing.spaceMd),
-        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top section: Artwork + Metadata + Timeline Scrubber
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // Artwork Box (1:1 aspect ratio square, max 200dp, centered horizontally)
-            Box(
+        val isCompactHeight = maxHeight < 380.dp
+        val artworkSize = when {
+            maxHeight >= 410.dp -> 184.dp
+            maxHeight >= 370.dp -> 176.dp
+            maxHeight >= 330.dp -> 144.dp
+            else -> 120.dp
+        }.coerceAtMost(maxWidth - 28.dp)
+
+        val artworkBottomSpacer = if (isCompactHeight) 6.dp else 10.dp
+        val metadataBottomSpacer = if (isCompactHeight) 6.dp else 10.dp
+        val scrubberPaddingVertical = if (isCompactHeight) 2.dp else 4.dp
+        val transportRowTopPadding = if (isCompactHeight) 6.dp else 8.dp
+        val secBtnSize = 44.dp
+        val priBtnSize = 56.dp
+        val secIconSize = 20.dp
+        val priIconSize = 26.dp
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    horizontal = spacing.spaceMd,
+                    vertical = if (isCompactHeight) spacing.spaceSm else spacing.spaceMd
+                ),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Top section: Artwork + Metadata + Timeline Scrubber
+            // Weighted (weight = 1f, fill = false) so it yields space to unweighted transport controls
+            Column(
                 modifier = Modifier
-                    .size(200.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .clip(LumaTheme.shapes.medium)
-                    .background(colors.surfaceContainerHighest),
-                contentAlignment = Alignment.Center
+                    .weight(1f, fill = false)
+                    .fillMaxWidth()
             ) {
-                if (currentTrack?.artworkUri != null) {
-                    AsyncImage(
-                        model = currentTrack.artworkUri,
-                        contentDescription = currentTrack.title,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        colors.surfaceContainerHighest,
-                                        colors.surfaceContainerLowest
+                // Artwork Box (1:1 aspect ratio square, centered horizontally)
+                Box(
+                    modifier = Modifier
+                        .size(artworkSize)
+                        .align(Alignment.CenterHorizontally)
+                        .clip(LumaTheme.shapes.medium)
+                        .background(colors.surfaceContainerHighest),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (currentTrack?.artworkUri != null) {
+                        AsyncImage(
+                            model = currentTrack.artworkUri,
+                            contentDescription = currentTrack.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            colors.surfaceContainerHighest,
+                                            colors.surfaceContainerLowest
+                                        )
                                     )
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_nav_music),
-                            contentDescription = "Music",
-                            modifier = Modifier.size(56.dp),
-                            tint = colors.cyan.copy(alpha = 0.6f)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_nav_music),
+                                contentDescription = "Music",
+                                modifier = Modifier.size(if (artworkSize < 150.dp) 40.dp else 56.dp),
+                                tint = colors.cyan.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+
+                    // Format badge floating on top-left of artwork
+                    if (currentTrack != null) {
+                        val formatLabel = currentTrack.formatTag
+                        LumaBadge(
+                            text = formatLabel,
+                            variant = LumaBadgeVariant.Highlight,
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(if (isCompactHeight) 6.dp else 8.dp)
                         )
                     }
                 }
 
-                // Format badge floating on top-left of artwork
-                if (currentTrack != null) {
-                    val formatLabel = currentTrack.formatTag
-                    LumaBadge(
-                        text = formatLabel,
-                        variant = LumaBadgeVariant.Highlight,
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(8.dp)
-                    )
-                }
-            }
+                Spacer(modifier = Modifier.height(artworkBottomSpacer))
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Track metadata
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_nav_music),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = colors.cyan
-                )
-                Text(
-                    text = currentTrack?.cleanTitle ?: "No Track Selected",
-                    style = LumaTheme.typography.headlineMd,
-                    color = colors.textPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            val subtitle = if (currentTrack != null) {
-                if (!currentTrack.album.isNullOrBlank()) {
-                    "${currentTrack.displayArtist} • ${currentTrack.displayAlbum}"
-                } else {
-                    currentTrack.displayArtist
-                }
-            } else {
-                "Select a track from the library to start playback"
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = subtitle,
-                    style = LumaTheme.typography.bodyMd,
-                    color = colors.textSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-                if (currentTrack != null && playbackState.queue.isNotEmpty()) {
-                    val queuePositionText = "Track ${playbackState.queueIndex + 1} of ${playbackState.queue.size}"
-                    Text(
-                        text = queuePositionText,
-                        style = LumaTheme.typography.labelSm,
-                        color = colors.textMuted
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Timeline Scrubber Bar with interactive TV D-pad seeking
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(scrubberFocusRequester)
-                    .focusProperties {
-                        canFocus = canSeek
-                        down = playButtonFocusRequester
-                        up = activeChipFocusRequester
-                    }
-                    .onFocusChanged { isScrubberFocused = it.isFocused }
-                    .focusable(enabled = canSeek)
-                    .onKeyEvent { keyEvent ->
-                        if (!canSeek) return@onKeyEvent false
-                        when (keyEvent.key) {
-                            Key.DirectionRight -> {
-                                if (keyEvent.type == KeyEventType.KeyDown) {
-                                    viewModel.seekBy(10_000L)
-                                }
-                                true
-                            }
-                            Key.DirectionLeft -> {
-                                if (keyEvent.type == KeyEventType.KeyDown) {
-                                    viewModel.seekBy(-10_000L)
-                                }
-                                true
-                            }
-                            Key.DirectionCenter, Key.Enter -> {
-                                if (keyEvent.type == KeyEventType.KeyDown) {
-                                    viewModel.togglePlayPause()
-                                }
-                                true
-                            }
-                            else -> false
-                        }
-                    }
-                    .clip(LumaTheme.shapes.pill)
-                    .border(
-                        width = if (isScrubberFocused) 1.5.dp else 0.dp,
-                        color = if (isScrubberFocused) colors.cyan else Color.Transparent,
-                        shape = LumaTheme.shapes.pill
-                    )
-                    .background(
-                        color = if (isScrubberFocused) colors.cyan.copy(alpha = 0.08f) else Color.Transparent,
-                        shape = LumaTheme.shapes.pill
-                    )
-                    .padding(horizontal = 8.dp, vertical = 6.dp)
-            ) {
-                BoxWithConstraints(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(16.dp),
-                    contentAlignment = Alignment.CenterStart
+                // Track metadata
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    val trackHeight = if (isScrubberFocused) 6.dp else 4.dp
-                    val thumbRadius = if (isScrubberFocused) 9.dp else 6.dp
-                    val thumbDiameter = thumbRadius * 2
-                    val progress = playbackState.progress.coerceIn(0f, 1f)
-                    val thumbOffset = (maxWidth * progress - thumbRadius).coerceIn(0.dp, maxWidth - thumbDiameter)
-
-                    // Track background line
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(trackHeight)
-                            .clip(LumaTheme.shapes.pill)
-                            .background(colors.surfaceContainerHighest)
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_nav_music),
+                        contentDescription = null,
+                        modifier = Modifier.size(if (isCompactHeight) 18.dp else 20.dp),
+                        tint = colors.cyan
                     )
-                    // Filled cyan progress line
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(progress)
-                            .height(trackHeight)
-                            .clip(LumaTheme.shapes.pill)
-                            .background(colors.cyan)
-                    )
-                    // Circular thumb with luminous cyan accent
-                    Box(
-                        modifier = Modifier
-                            .offset(x = thumbOffset)
-                            .size(thumbDiameter)
-                            .clip(CircleShape)
-                            .background(colors.textPrimary)
-                            .border(
-                                width = if (isScrubberFocused) 2.5.dp else 1.5.dp,
-                                color = colors.cyan,
-                                shape = CircleShape
-                            )
+                    Text(
+                        text = currentTrack?.cleanTitle ?: "No Track Selected",
+                        style = if (isCompactHeight) LumaTheme.typography.headlineSm else LumaTheme.typography.headlineMd,
+                        color = colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(2.dp))
+
+                val subtitle = if (currentTrack != null) {
+                    if (!currentTrack.album.isNullOrBlank()) {
+                        "${currentTrack.displayArtist} • ${currentTrack.displayAlbum}"
+                    } else {
+                        currentTrack.displayArtist
+                    }
+                } else {
+                    "Select a track from the library to start playback"
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = playbackState.formattedCurrentPosition,
-                        style = LumaTheme.typography.labelSm,
-                        color = if (isScrubberFocused) colors.cyan else colors.cyan.copy(alpha = 0.85f)
+                        text = subtitle,
+                        style = if (isCompactHeight) LumaTheme.typography.bodySm else LumaTheme.typography.bodyMd,
+                        color = colors.textSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
-                    Text(
-                        text = playbackState.formattedDuration,
-                        style = LumaTheme.typography.labelSm,
-                        color = colors.textMuted
-                    )
+                    if (currentTrack != null && playbackState.queue.isNotEmpty()) {
+                        val queuePositionText = "Track ${playbackState.queueIndex + 1} of ${playbackState.queue.size}"
+                        Text(
+                            text = queuePositionText,
+                            style = LumaTheme.typography.labelSm,
+                            color = colors.textMuted
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(metadataBottomSpacer))
+
+                // Timeline Scrubber Bar with interactive TV D-pad seeking
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(scrubberFocusRequester)
+                        .focusProperties {
+                            canFocus = canSeek
+                            down = playButtonFocusRequester
+                            up = activeChipFocusRequester
+                        }
+                        .onFocusChanged { isScrubberFocused = it.isFocused }
+                        .focusable(enabled = canSeek)
+                        .onKeyEvent { keyEvent ->
+                            if (!canSeek) return@onKeyEvent false
+                            when (keyEvent.key) {
+                                Key.DirectionRight -> {
+                                    if (keyEvent.type == KeyEventType.KeyDown) {
+                                        viewModel.seekBy(10_000L)
+                                    }
+                                    true
+                                }
+                                Key.DirectionLeft -> {
+                                    if (keyEvent.type == KeyEventType.KeyDown) {
+                                        viewModel.seekBy(-10_000L)
+                                    }
+                                    true
+                                }
+                                Key.DirectionCenter, Key.Enter -> {
+                                    if (keyEvent.type == KeyEventType.KeyDown) {
+                                        viewModel.togglePlayPause()
+                                    }
+                                    true
+                                }
+                                else -> false
+                            }
+                        }
+                        .clip(LumaTheme.shapes.pill)
+                        .border(
+                            width = if (isScrubberFocused) 1.5.dp else 0.dp,
+                            color = if (isScrubberFocused) colors.cyan else Color.Transparent,
+                            shape = LumaTheme.shapes.pill
+                        )
+                        .background(
+                            color = if (isScrubberFocused) colors.cyan.copy(alpha = 0.08f) else Color.Transparent,
+                            shape = LumaTheme.shapes.pill
+                        )
+                        .padding(horizontal = 8.dp, vertical = scrubberPaddingVertical)
+                ) {
+                    BoxWithConstraints(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(if (isCompactHeight) 12.dp else 16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        val trackHeight = if (isScrubberFocused) 5.dp else 4.dp
+                        val thumbRadius = if (isScrubberFocused) 8.dp else 6.dp
+                        val thumbDiameter = thumbRadius * 2
+                        val progress = playbackState.progress.coerceIn(0f, 1f)
+                        val thumbOffset = (maxWidth * progress - thumbRadius).coerceIn(0.dp, maxWidth - thumbDiameter)
+
+                        // Track background line
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(trackHeight)
+                                .clip(LumaTheme.shapes.pill)
+                                .background(colors.surfaceContainerHighest)
+                        )
+                        // Filled cyan progress line
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(progress)
+                                .height(trackHeight)
+                                .clip(LumaTheme.shapes.pill)
+                                .background(colors.cyan)
+                        )
+                        // Circular thumb with luminous cyan accent
+                        Box(
+                            modifier = Modifier
+                                .offset(x = thumbOffset)
+                                .size(thumbDiameter)
+                                .clip(CircleShape)
+                                .background(colors.textPrimary)
+                                .border(
+                                    width = if (isScrubberFocused) 2.dp else 1.5.dp,
+                                    color = colors.cyan,
+                                    shape = CircleShape
+                                )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = playbackState.formattedCurrentPosition,
+                            style = LumaTheme.typography.labelSm,
+                            color = if (isScrubberFocused) colors.cyan else colors.cyan.copy(alpha = 0.85f)
+                        )
+                        Text(
+                            text = playbackState.formattedDuration,
+                            style = LumaTheme.typography.labelSm,
+                            color = colors.textMuted
+                        )
+                    }
                 }
             }
-        }
 
-        // Bottom section: TV Transport Controls Row (5 circular icon buttons matching Stitch)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 1. Shuffle Button
-            LumaButton(
-                onClick = { viewModel.toggleShuffle() },
-                variant = if (playbackState.isShuffled) LumaButtonVariant.Secondary else LumaButtonVariant.Ghost,
-                shape = CircleShape,
-                contentPadding = PaddingValues(0.dp),
+            // Bottom section: TV Transport Controls Row (5 circular icon buttons matching Stitch)
+            // Unweighted, measured first to guarantee full visibility on screen
+            Row(
                 modifier = Modifier
-                    .size(44.dp)
-                    .focusRequester(shuffleButtonFocusRequester)
-                    .focusProperties {
-                        left = sidebarMusicFocusRequester
-                        right = prevButtonFocusRequester
-                        up = transportUpFocusRequester
-                        down = FocusRequester.Cancel
-                    }
-                    .onFocusChanged { if (it.isFocused) android.util.Log.d("LumaMusicFocus", "ShuffleButton became focused!") }
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, end = 4.dp, top = transportRowTopPadding),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_action_shuffle),
-                    contentDescription = "Shuffle",
-                    modifier = Modifier.size(20.dp),
-                    tint = if (playbackState.isShuffled) colors.cyan else colors.textSecondary
-                )
-            }
+                // 1. Shuffle Button
+                LumaButton(
+                    onClick = { viewModel.toggleShuffle() },
+                    variant = if (playbackState.isShuffled) LumaButtonVariant.Secondary else LumaButtonVariant.Ghost,
+                    shape = CircleShape,
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier
+                        .size(secBtnSize)
+                        .focusRequester(shuffleButtonFocusRequester)
+                        .focusProperties {
+                            left = sidebarMusicFocusRequester
+                            right = prevButtonFocusRequester
+                            up = transportUpFocusRequester
+                            down = FocusRequester.Cancel
+                        }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_action_shuffle),
+                        contentDescription = "Shuffle",
+                        modifier = Modifier.size(secIconSize),
+                        tint = if (playbackState.isShuffled) colors.cyan else LocalContentColor.current
+                    )
+                }
 
-            // 2. Previous Button
-            LumaButton(
-                onClick = { viewModel.previous() },
-                variant = LumaButtonVariant.Ghost,
-                shape = CircleShape,
-                contentPadding = PaddingValues(0.dp),
-                modifier = Modifier
-                    .size(44.dp)
-                    .focusRequester(prevButtonFocusRequester)
-                    .focusProperties {
-                        left = shuffleButtonFocusRequester
-                        right = playButtonFocusRequester
-                        up = transportUpFocusRequester
-                        down = FocusRequester.Cancel
-                    }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_action_skip_previous),
-                    contentDescription = "Previous",
-                    modifier = Modifier.size(20.dp),
-                    tint = colors.textPrimary
-                )
-            }
+                // 2. Previous Button
+                LumaButton(
+                    onClick = { viewModel.previous() },
+                    variant = LumaButtonVariant.Ghost,
+                    shape = CircleShape,
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier
+                        .size(secBtnSize)
+                        .focusRequester(prevButtonFocusRequester)
+                        .focusProperties {
+                            left = shuffleButtonFocusRequester
+                            right = playButtonFocusRequester
+                            up = transportUpFocusRequester
+                            down = FocusRequester.Cancel
+                        }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_action_skip_previous),
+                        contentDescription = "Previous",
+                        modifier = Modifier.size(secIconSize),
+                        tint = LocalContentColor.current
+                    )
+                }
 
-            // 3. Play / Pause Button (Primary Action Anchor)
-            LumaButton(
-                onClick = { viewModel.togglePlayPause() },
-                variant = LumaButtonVariant.Primary,
-                shape = CircleShape,
-                contentPadding = PaddingValues(0.dp),
-                modifier = Modifier
-                    .size(52.dp)
-                    .focusRequester(playButtonFocusRequester)
-                    .focusProperties {
-                        left = prevButtonFocusRequester
-                        right = nextButtonFocusRequester
-                        up = transportUpFocusRequester
-                        down = FocusRequester.Cancel
-                    }
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = if (playbackState.isPlaying) R.drawable.ic_action_pause else R.drawable.ic_action_play
-                    ),
-                    contentDescription = if (playbackState.isPlaying) "Pause" else "Play",
-                    modifier = Modifier.size(24.dp),
-                    tint = colors.surfaceContainerLowest
-                )
-            }
+                // 3. Play / Pause Button (Primary Action Anchor)
+                LumaButton(
+                    onClick = { viewModel.togglePlayPause() },
+                    variant = LumaButtonVariant.Primary,
+                    shape = CircleShape,
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier
+                        .size(priBtnSize)
+                        .focusRequester(playButtonFocusRequester)
+                        .focusProperties {
+                            left = prevButtonFocusRequester
+                            right = nextButtonFocusRequester
+                            up = transportUpFocusRequester
+                            down = FocusRequester.Cancel
+                        }
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (playbackState.isPlaying) R.drawable.ic_action_pause else R.drawable.ic_action_play
+                        ),
+                        contentDescription = if (playbackState.isPlaying) "Pause" else "Play",
+                        modifier = Modifier.size(priIconSize),
+                        tint = LocalContentColor.current
+                    )
+                }
 
-            // 4. Next Button
-            LumaButton(
-                onClick = { viewModel.next() },
-                variant = LumaButtonVariant.Ghost,
-                shape = CircleShape,
-                contentPadding = PaddingValues(0.dp),
-                modifier = Modifier
-                    .size(44.dp)
-                    .focusRequester(nextButtonFocusRequester)
-                    .focusProperties {
-                        left = playButtonFocusRequester
-                        right = repeatButtonFocusRequester
-                        up = transportUpFocusRequester
-                        down = FocusRequester.Cancel
-                    }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_action_skip_next),
-                    contentDescription = "Next",
-                    modifier = Modifier.size(20.dp),
-                    tint = colors.textPrimary
-                )
-            }
+                // 4. Next Button
+                LumaButton(
+                    onClick = { viewModel.next() },
+                    variant = LumaButtonVariant.Ghost,
+                    shape = CircleShape,
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier
+                        .size(secBtnSize)
+                        .focusRequester(nextButtonFocusRequester)
+                        .focusProperties {
+                            left = playButtonFocusRequester
+                            right = repeatButtonFocusRequester
+                            up = transportUpFocusRequester
+                            down = FocusRequester.Cancel
+                        }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_action_skip_next),
+                        contentDescription = "Next",
+                        modifier = Modifier.size(secIconSize),
+                        tint = LocalContentColor.current
+                    )
+                }
 
-            // 5. Repeat Button (rightmost: D-pad RIGHT targets the track list)
-            val isRepeatActive = playbackState.repeatMode != AudioRepeatMode.OFF
-            val repeatIconId = if (playbackState.repeatMode == AudioRepeatMode.ONE) {
-                R.drawable.ic_action_repeat_one
-            } else {
-                R.drawable.ic_action_repeat
-            }
-            LumaButton(
-                onClick = { viewModel.cycleRepeatMode() },
-                variant = if (isRepeatActive) LumaButtonVariant.Secondary else LumaButtonVariant.Ghost,
-                shape = CircleShape,
-                contentPadding = PaddingValues(0.dp),
-                modifier = Modifier
-                    .size(44.dp)
-                    .focusRequester(repeatButtonFocusRequester)
-                    .focusProperties {
-                        left = nextButtonFocusRequester
-                        right = activeChipFocusRequester
-                        up = transportUpFocusRequester
-                        down = FocusRequester.Cancel
-                    }
-            ) {
-                Icon(
-                    painter = painterResource(id = repeatIconId),
-                    contentDescription = "Repeat",
-                    modifier = Modifier.size(20.dp),
-                    tint = if (isRepeatActive) colors.cyan else colors.textSecondary
-                )
+                // 5. Repeat Button (rightmost: D-pad RIGHT targets the track list)
+                val isRepeatActive = playbackState.repeatMode != AudioRepeatMode.OFF
+                val repeatIconId = if (playbackState.repeatMode == AudioRepeatMode.ONE) {
+                    R.drawable.ic_action_repeat_one
+                } else {
+                    R.drawable.ic_action_repeat
+                }
+                LumaButton(
+                    onClick = { viewModel.cycleRepeatMode() },
+                    variant = if (isRepeatActive) LumaButtonVariant.Secondary else LumaButtonVariant.Ghost,
+                    shape = CircleShape,
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier
+                        .size(secBtnSize)
+                        .focusRequester(repeatButtonFocusRequester)
+                        .focusProperties {
+                            left = nextButtonFocusRequester
+                            right = activeContentFocusRequester
+                            up = transportUpFocusRequester
+                            down = FocusRequester.Cancel
+                        }
+                ) {
+                    Icon(
+                        painter = painterResource(id = repeatIconId),
+                        contentDescription = "Repeat",
+                        modifier = Modifier.size(secIconSize),
+                        tint = if (isRepeatActive) colors.cyan else LocalContentColor.current
+                    )
+                }
             }
         }
     }
@@ -651,9 +897,6 @@ private fun MusicBrowsingPanel(
     firstAlbumFocusRequester: FocusRequester,
     firstArtistFocusRequester: FocusRequester,
     activeChipFocusRequester: FocusRequester,
-    songsChipFocusRequester: FocusRequester,
-    albumsChipFocusRequester: FocusRequester,
-    artistsChipFocusRequester: FocusRequester,
     modifier: Modifier = Modifier
 ) {
     val colors = LumaTheme.colors
@@ -673,55 +916,8 @@ private fun MusicBrowsingPanel(
             .focusGroup()
             .clip(LumaTheme.shapes.large)
             .background(colors.surfaceContainerLow)
-            .padding(spacing.spaceMd)
+            .padding(horizontal = spacing.spaceMd, vertical = spacing.spaceSm)
     ) {
-
-        // Top Filter Navigation: Remote Focusable Category Chips (Stitch Specification)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusGroup()
-                .padding(bottom = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CategoryChip(
-                label = "All Songs",
-                count = tracks.size,
-                isSelected = selectedCategory == MusicCategory.SONGS,
-                onClick = { viewModel.selectCategory(MusicCategory.SONGS) },
-                focusRequester = songsChipFocusRequester,
-                modifier = Modifier.focusProperties {
-                    left = playButtonFocusRequester
-                    right = albumsChipFocusRequester
-                }
-            )
-
-            CategoryChip(
-                label = "Albums",
-                count = albums.size,
-                isSelected = selectedCategory == MusicCategory.ALBUMS,
-                onClick = { viewModel.selectCategory(MusicCategory.ALBUMS) },
-                focusRequester = albumsChipFocusRequester,
-                modifier = Modifier.focusProperties {
-                    left = songsChipFocusRequester
-                    right = artistsChipFocusRequester
-                }
-            )
-
-            CategoryChip(
-                label = "Artists",
-                count = artists.size,
-                isSelected = selectedCategory == MusicCategory.ARTISTS,
-                onClick = { viewModel.selectCategory(MusicCategory.ARTISTS) },
-                focusRequester = artistsChipFocusRequester,
-                modifier = Modifier.focusProperties {
-                    left = albumsChipFocusRequester
-                    right = FocusRequester.Cancel
-                }
-            )
-        }
-
         // Contextual browsing content per active category
         when (selectedCategory) {
             MusicCategory.SONGS -> {
@@ -730,7 +926,7 @@ private fun MusicBrowsingPanel(
                         title = "No Songs Available",
                         message = "No audio tracks discovered.",
                         playButtonFocusRequester = playButtonFocusRequester,
-                        activeChipFocusRequester = songsChipFocusRequester,
+                        activeChipFocusRequester = activeChipFocusRequester,
                         actionFocusRequester = firstTrackFocusRequester
                     )
                 } else {
@@ -750,8 +946,12 @@ private fun MusicBrowsingPanel(
                             val isActiveTrack = playbackState.currentTrack?.id == track.id
                             val rowFocusModifier = Modifier
                                 .fillMaxWidth()
+                                .let { if (index == 0) it.focusRequester(firstTrackFocusRequester) else it }
                                 .focusProperties {
                                     left = playButtonFocusRequester
+                                    if (index == 0) {
+                                        up = activeChipFocusRequester
+                                    }
                                 }
 
                             TrackRowCard(
@@ -845,7 +1045,7 @@ private fun MusicBrowsingPanel(
                         title = "No Albums Found",
                         message = "No album metadata discovered in local storage.",
                         playButtonFocusRequester = playButtonFocusRequester,
-                        activeChipFocusRequester = albumsChipFocusRequester,
+                        activeChipFocusRequester = activeChipFocusRequester,
                         actionFocusRequester = firstAlbumFocusRequester
                     )
                 } else {
@@ -867,8 +1067,12 @@ private fun MusicBrowsingPanel(
 
                             val rowFocusModifier = Modifier
                                 .fillMaxWidth()
+                                .let { if (index == 0) it.focusRequester(firstAlbumFocusRequester) else it }
                                 .focusProperties {
                                     left = playButtonFocusRequester
+                                    if (index == 0) {
+                                        up = activeChipFocusRequester
+                                    }
                                 }
 
                             AlbumRowCard(
@@ -888,7 +1092,7 @@ private fun MusicBrowsingPanel(
                         title = "No Artists Found",
                         message = "No artist metadata discovered in local storage.",
                         playButtonFocusRequester = playButtonFocusRequester,
-                        activeChipFocusRequester = artistsChipFocusRequester,
+                        activeChipFocusRequester = activeChipFocusRequester,
                         actionFocusRequester = firstArtistFocusRequester
                     )
                 } else {
@@ -910,8 +1114,12 @@ private fun MusicBrowsingPanel(
 
                             val rowFocusModifier = Modifier
                                 .fillMaxWidth()
+                                .let { if (index == 0) it.focusRequester(firstArtistFocusRequester) else it }
                                 .focusProperties {
                                     left = playButtonFocusRequester
+                                    if (index == 0) {
+                                        up = activeChipFocusRequester
+                                    }
                                 }
 
                             ArtistRowCard(
@@ -924,6 +1132,26 @@ private fun MusicBrowsingPanel(
                     }
                 }
             }
+
+            MusicCategory.PLAYLISTS -> {
+                BrowsingEmptyState(
+                    title = "No Playlists Found",
+                    message = "No local playlists available.",
+                    playButtonFocusRequester = playButtonFocusRequester,
+                    activeChipFocusRequester = activeChipFocusRequester,
+                    actionFocusRequester = playButtonFocusRequester
+                )
+            }
+
+            MusicCategory.RECENTLY_PLAYED -> {
+                BrowsingEmptyState(
+                    title = "No Recently Played Tracks",
+                    message = "Recently played tracks will appear here once audio playback history is recorded.",
+                    playButtonFocusRequester = playButtonFocusRequester,
+                    activeChipFocusRequester = activeChipFocusRequester,
+                    actionFocusRequester = playButtonFocusRequester
+                )
+            }
         }
     }
 }
@@ -932,7 +1160,7 @@ private fun MusicBrowsingPanel(
 @Composable
 private fun CategoryChip(
     label: String,
-    count: Int,
+    count: Int? = null,
     isSelected: Boolean,
     onClick: () -> Unit,
     focusRequester: FocusRequester,
@@ -991,15 +1219,25 @@ private fun CategoryChip(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (isSelected) {
+                val infiniteTransition = rememberInfiniteTransition(label = "ChipDotPulse")
+                val dotAlpha by infiniteTransition.animateFloat(
+                    initialValue = 0.4f,
+                    targetValue = 1.0f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "ChipDotAlpha"
+                )
                 Box(
                     modifier = Modifier
                         .size(6.dp)
                         .clip(CircleShape)
-                        .background(colors.cyan)
+                        .background(colors.cyan.copy(alpha = dotAlpha))
                 )
             }
             Text(
-                text = "$label ($count)",
+                text = if (count != null) "$label ($count)" else label,
                 style = LumaTheme.typography.labelMd,
                 color = if (isSelected) colors.cyan else colors.textSecondary
             )

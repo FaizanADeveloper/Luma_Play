@@ -22,7 +22,9 @@ import kotlinx.coroutines.launch
 enum class MusicCategory {
     SONGS,
     ALBUMS,
-    ARTISTS
+    ARTISTS,
+    PLAYLISTS,
+    RECENTLY_PLAYED
 }
 
 /**
