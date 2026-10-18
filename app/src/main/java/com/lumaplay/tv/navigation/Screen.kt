@@ -15,6 +15,9 @@ sealed interface Screen {
     /** The local music library and player screen. */
     data object Music : Screen
 
+    /** The universal offline search screen. */
+    data object Search : Screen
+
     /**
      * Video details screen for a single indexed video.
      * Wired to the player in B2-M1; a dedicated details screen

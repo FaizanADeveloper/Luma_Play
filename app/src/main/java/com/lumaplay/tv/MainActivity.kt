@@ -56,6 +56,9 @@ import com.lumaplay.tv.ui.music.MusicScreen
 import com.lumaplay.tv.ui.splash.LumaLaunchScreen
 import com.lumaplay.tv.ui.videos.VideoLibraryScreen
 import com.lumaplay.tv.ui.videos.VideosViewModel
+import com.lumaplay.tv.data.repository.LocalMediaSearchRepository
+import com.lumaplay.tv.ui.search.SearchScreen
+import com.lumaplay.tv.ui.search.SearchViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -101,6 +104,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val searchViewModel by viewModels<SearchViewModel> {
+        object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return SearchViewModel(
+                    searchRepository = LocalMediaSearchRepository(
+                        videoRepository = MediaStoreVideoRepository(applicationContext),
+                        audioRepository = MediaStoreAudioRepository(applicationContext)
+                    )
+                ) as T
+            }
+        }
+    }
+
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -130,6 +147,8 @@ class MainActivity : ComponentActivity() {
                 val videoDetailsPlayFocusRequester = remember { FocusRequester() }
                 val sidebarMusicFocusRequester = remember { FocusRequester() }
                 val musicContentFocusRequester = remember { FocusRequester() }
+                val sidebarSearchFocusRequester = remember { FocusRequester() }
+                val searchContentFocusRequester = remember { FocusRequester() }
 
                 val permissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
@@ -160,11 +179,16 @@ class MainActivity : ComponentActivity() {
                 // Handle Back press on VideoDetail screen to return to originating screen
                 BackHandler(enabled = currentScreen is Screen.VideoDetail) {
                     currentScreen = detailsOriginScreen
-                    selectedDestination = if (detailsOriginScreen is Screen.Videos) {
-                        TvNavDestination.Videos
-                    } else {
-                        TvNavDestination.Home
+                    selectedDestination = when (detailsOriginScreen) {
+                        is Screen.Videos -> TvNavDestination.Videos
+                        is Screen.Search -> TvNavDestination.Search
+                        else -> TvNavDestination.Home
                     }
+                }
+
+                // Handle Back press on Search screen to return to Home dashboard
+                BackHandler(enabled = currentScreen is Screen.Search) {
+                    currentScreen = Screen.Home
                 }
 
                 // Listen for onResume to detect when user returns from Android Settings
@@ -190,11 +214,12 @@ class MainActivity : ComponentActivity() {
                         is Screen.Videos -> selectedDestination = TvNavDestination.Videos
                         is Screen.Music -> selectedDestination = TvNavDestination.Music
                         is Screen.Home -> selectedDestination = TvNavDestination.Home
+                        is Screen.Search -> selectedDestination = TvNavDestination.Search
                         is Screen.VideoDetail -> {
-                            selectedDestination = if (detailsOriginScreen is Screen.Videos) {
-                                TvNavDestination.Videos
-                            } else {
-                                TvNavDestination.Home
+                            selectedDestination = when (detailsOriginScreen) {
+                                is Screen.Videos -> TvNavDestination.Videos
+                                is Screen.Search -> TvNavDestination.Search
+                                else -> TvNavDestination.Home
                             }
                         }
                         is Screen.Player -> {
@@ -233,13 +258,15 @@ class MainActivity : ComponentActivity() {
                                             TvNavDestination.Home -> currentScreen = Screen.Home
                                             TvNavDestination.Videos -> currentScreen = Screen.Videos
                                             TvNavDestination.Music -> currentScreen = Screen.Music
+                                            TvNavDestination.Search -> currentScreen = Screen.Search
                                             else -> { /* B2-M4…M5 destinations — coming in later milestones */ }
                                         }
                                     },
                                     dashboardFocusRequester = contentContainerFocusRequester,
                                     homeFocusRequester = sidebarHomeFocusRequester,
                                     videosFocusRequester = sidebarVideosFocusRequester,
-                                    musicFocusRequester = sidebarMusicFocusRequester
+                                    musicFocusRequester = sidebarMusicFocusRequester,
+                                    searchFocusRequester = sidebarSearchFocusRequester
                                 )
 
                                 Column(
@@ -254,6 +281,8 @@ class MainActivity : ComponentActivity() {
                                                 videoDetailsPlayFocusRequester
                                             } else if (currentScreen is Screen.Music) {
                                                 musicContentFocusRequester
+                                            } else if (currentScreen is Screen.Search) {
+                                                searchContentFocusRequester
                                             } else {
                                                 FocusRequester.Default
                                             }
@@ -333,8 +362,40 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
 
+                                        is Screen.Search -> {
+                                            SearchScreen(
+                                                viewModel = searchViewModel,
+                                                sidebarSearchFocusRequester = sidebarSearchFocusRequester,
+                                                contentFocusRequester = searchContentFocusRequester,
+                                                onVideoClick = { video ->
+                                                    musicPlayerViewModel.pause()
+                                                    detailsOriginScreen = Screen.Search
+                                                    previousScreenBeforePlayer = Screen.VideoDetail(video)
+                                                    currentScreen = Screen.VideoDetail(video)
+                                                },
+                                                onTrackClick = { track ->
+                                                    musicPlayerViewModel.playTrack(track, listOf(track))
+                                                    currentScreen = Screen.Music
+                                                    selectedDestination = TvNavDestination.Music
+                                                },
+                                                onArtistClick = { artist ->
+                                                    musicPlayerViewModel.playArtist(artist)
+                                                    currentScreen = Screen.Music
+                                                    selectedDestination = TvNavDestination.Music
+                                                },
+                                                onAlbumClick = { album ->
+                                                    musicPlayerViewModel.playAlbum(album)
+                                                    currentScreen = Screen.Music
+                                                    selectedDestination = TvNavDestination.Music
+                                                },
+                                                onFolderClick = { _ ->
+                                                    // Folders browsing milestone is B2-M4
+                                                }
+                                            )
+                                        }
+
                                         else -> {
-                                            // Other destinations (Folders, Search) — B2-M4 to M5
+                                            // Other destinations (Folders, Settings) — B2-M4 to M5
                                             HomeScreen(
                                                 uiState = uiState,
                                                 onScanClick = { homeViewModel.scanVideos() },
